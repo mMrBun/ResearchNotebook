@@ -45,7 +45,7 @@
 模型根据商品图像 $i^v$ 和提示词生成描述：
 
 $$
-i^s=\operatorname{MLLM}(\mathrm{Prompt}_1,i^v).
+i^s=\mathrm{MLLM}(\mathrm{Prompt}_1,i^v).
 $$
 
 提示词要求结合商品领域，描述颜色、材质、风格、功能等可能影响购买决策的属性，并将输出限制为不超过 100 个词的一段文字。随后，模型拼接图片描述 $i^s$ 与原始商品文本 $i^t$：
@@ -61,7 +61,7 @@ $$
 对用户 $u$，模型按历史顺序整理其交互过的物品描述 $i^m$，形成 $\mathrm{List}_u$。MLLM 根据整份列表推理用户偏好，生成不超过 100 个词的自然语言画像：
 
 $$
-u^p=\operatorname{MLLM}(\mathrm{Prompt}_2,\mathrm{List}_u).
+u^p=\mathrm{MLLM}(\mathrm{Prompt}_2,\mathrm{List}_u).
 $$
 
 MLLM 根据用户交互过的商品及其属性，归纳可能的共同偏好和潜在意图，以此代替物品向量的直接均值。生成的画像再由商品侧使用的同一文本编码器转为用户向量 $e_u$。
@@ -69,7 +69,7 @@ MLLM 根据用户交互过的商品及其属性，归纳可能的共同偏好和
 
 ### 5. 图去噪
 
-模型先用文本编码器将商品描述编码为 $E_I={e_i}$，再计算物品 $a$ 和 $b$ 的余弦相似度：
+模型先用文本编码器将商品描述编码为 $E_I=\lbrace e_i\rbrace$，再计算物品 $a$ 和 $b$ 的余弦相似度：
 
 $$
 s_{ab}=\frac{e_a^\top e_b}{\|e_a\|\|e_b\|}.
@@ -80,7 +80,7 @@ $$
 $$
 \widetilde s_{ab}
 =\begin{cases}
-1,& b\in\operatorname{TopK}_{K_s}(a)
+1,& b\in\mathrm{TopK}_{K_s}(a)
 \ \text{且}\ s_{ab}\geq\alpha,\\
 0,& \text{其他情况}.
 \end{cases}

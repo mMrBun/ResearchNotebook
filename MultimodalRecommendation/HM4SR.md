@@ -36,7 +36,7 @@
 
 模型输入用户的物品序列 $S=(v_1,\ldots,v_n)$、时间戳 $T=(t_1,\ldots,t_n)$ 和商品图文内容，输出下一步候选商品的预测分数。
 
-$m\in{\mathrm{id},\mathrm{txt},\mathrm{img}}$ 表示模态，$r$ 表示专家编号。
+$m\in\lbrace\mathrm{id},\mathrm{txt},\mathrm{img}\rbrace$ 表示模态， $r$ 表示专家编号。
 
 
 ### 3. 交互专家
@@ -51,7 +51,7 @@ $$
 更新目标模态 $m$ 时，每个专家都接收这个 $3d$ 维向量，并将其映射为 $d$ 维输出。门控网络则根据目标模态自身的 $e^m$，生成各专家的 Softmax 权重：
 
 $$
-g^m=\operatorname{Softmax}(W_g^m e^m+b_g^m),
+g^m=\mathrm{Softmax}(W_g^m e^m+b_g^m),
 $$
 
 $$
@@ -62,7 +62,7 @@ x_{\mathrm{inter}}^m
 e^{m\prime}=e^m+x_{\mathrm{inter}}^m.
 $$
 
-各模态通过独立的门控权重组合专家输出，使文本分支能利用图像和 ID 信息，图像分支也能利用文本和 ID 信息。残差连接保留原有表示，$\alpha_m$ 控制新增交互信息的强度。
+各模态通过独立的门控权重组合专家输出，使文本分支能利用图像和 ID 信息，图像分支也能利用文本和 ID 信息。残差连接保留原有表示， $\alpha_m$ 控制新增交互信息的强度。
 
 
 ### 4. 时间专家
@@ -79,7 +79,7 @@ $$
 拼接两种时间向量后，模型生成时间专家的权重：
 
 $$
-g_i'=\operatorname{Softmax}
+g_i'=\mathrm{Softmax}
 \bigl(W_t[r_{1,i};r_{2,i}]+b_t\bigr).
 $$
 
