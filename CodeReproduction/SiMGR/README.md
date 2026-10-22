@@ -14,6 +14,15 @@
 在跑代码之前请在data目录中完成数据集的下载并解压。
 数据集地址：[Baby/Sports/Elec](https://drive.google.com/drive/folders/13cBy1EA_saTUuXxVllKgtfci2A09jyaG?usp=sharing) 
 
+## sport数据集复现结果
+```log
+Wed 21 Oct 2026 17:37:05 INFO 	Parameters: ['seed']=(999,),
+Valid: recall@5: 0.0442    recall@10: 0.0673    recall@20: 0.0993    recall@50: 0.1560    ndcg@5: 0.0299    ndcg@10: 0.0374    ndcg@20: 0.0455    ndcg@50: 0.0569    precision@5: 0.0093    precision@10: 0.0071    precision@20: 0.0052    precision@50: 0.0033    map@5: 0.0248    map@10: 0.0279    map@20: 0.0301    map@50: 0.0319    ,
+Test: recall@5: 0.0461    recall@10: 0.0695    recall@20: 0.1025    recall@50: 0.1586    ndcg@5: 0.0310    ndcg@10: 0.0386    ndcg@20: 0.0471    ndcg@50: 0.0585    precision@5: 0.0101    precision@10: 0.0076    precision@20: 0.0056    precision@50: 0.0035    map@5: 0.0253    map@10: 0.0284    map@20: 0.0306    map@50: 0.0324    
+```
+
+
+
 ## 复现步骤
 ### 强烈推荐使用uv进行包管理
 [安装uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer)
