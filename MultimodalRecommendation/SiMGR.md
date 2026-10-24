@@ -116,13 +116,15 @@ $$
 
 这样处理是因为负反馈关系具有异配性，MLP 用来进一步变换负邻居聚合的信息。
 
-$$\text{正反馈表示}
+$$
+\text{正反馈表示}
 \longrightarrow
 \text{负图传播}
 \longrightarrow
 \text{MLP}
 \longrightarrow
-\text{负反馈表示}$$
+\text{负反馈表示}
+$$
 
 #### 让正负反馈增强原有交互表示
 
