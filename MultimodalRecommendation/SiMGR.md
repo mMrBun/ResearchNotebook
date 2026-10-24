@@ -64,7 +64,7 @@ $$
 A^+
 (D^+)^{-\frac12}
 \dot E^{+(l)}
-\tag{5}
+\qquad \text{(5)}
 $$
 
 传播完成后对各层取平均
@@ -74,7 +74,7 @@ $$
 =
 \frac{1}{L+1}
 \sum_{l=0}^{L}\dot E^{+(l)}
-\tag{6}
+\qquad \text{(6)}
 $$
 
 $A^+$ 是正图的邻接矩阵，$D^+$ 是正图的度矩阵。初始表示来自可学习的用户、商品 ID 向量；传播两层时，把第 0、1、2 层一起平均，得到 $\ddot E^+$。原文公式（7）、（8）是把矩阵计算展开到单个用户和商品。
@@ -109,7 +109,7 @@ A^-
 (D^-)^{-\frac12}
 \ddot E^+
 \right)
-\tag{9}
+\qquad \text{(9)}
 $$
 
 作者在负图上进行一次图传播，然后加上一个 MLP，MLP 接收聚合后的向量，通过可学习的变换产生负反馈表示。
@@ -133,7 +133,7 @@ $$
 $$
 E_{\mathrm{ig}}^{\mathrm{id}}(\mathrm{new})
 =E_{\mathrm{ig}}^{\mathrm{id}}+\operatorname{ReLU}(w^++w^-)
-\tag{10}
+\qquad \text{(10)}
 $$
 
 $$
@@ -162,7 +162,7 @@ PST 根据每个用户已有的评分计算阈值，用来替代所有用户共�
 $$
 \mu_u=\frac{\sum_iR_{ui}M_{ui}}{\sum_iM_{ui}},\qquad
 \varepsilon_u=\sqrt{\frac{\sum_i(R_{ui}-\mu_u)^2M_{ui}}{\sum_iM_{ui}}}
-\tag{13}
+\qquad \text{(13)}
 $$
 
 没有交互的位置虽然在矩阵里记为 0。
@@ -171,7 +171,7 @@ $$
 
 $$
 \delta_u=\nu\mu_u-(1-\nu)\varepsilon_u
-\tag{14}
+\qquad \text{(14)}
 $$
 
 $\nu$ 是控制均值和标准差影响的超参数。比如某用户均值为 4、标准差为 1，取 $\nu=0.8$，得到的阈值就是 $0.8\times4-0.2\times1=3$。
@@ -194,8 +194,7 @@ $$
 
 $$
 s_{ij}^m=\frac{(h_i^m)^\top h_j^m}{\|h_i^m\|\|h_j^m\|},\quad m\in\{v,t\},
-\qquad S^f=S^v\odot S^t
-\tag{16}
+\qquad S^f=S^v\odot S^t\qquad \text{(16)}
 $$
 
 对于每个用户，取出其历史交互商品对应的相似度行，与未交互商品比较。这个历史集合并没有在定义中限定为只有高评分商品。两类补边策略如下：
