@@ -99,18 +99,7 @@ $`A^+`$ 是正图的邻接矩阵，$`D^+`$ 是正图的度矩阵。初始表示�
 
 直接使用刚得到的 $`\ddot{E}^+`$ 作为输入，节点先获得正反馈信息，再通过负反馈关系收集其他节点的这些表示。
 
-```math
-\ddot{E}^-
-=
-\operatorname{MLP}
-\left(
-(D^-)^{-\frac{1}{2}}
-A^-
-(D^-)^{-\frac{1}{2}}
-\ddot{E}^+
-\right)
-\qquad \text{(9)}
-```
+![formula9](../assets/SiMGR/formula9.png)
 
 作者在负图上进行一次图传播，然后加上一个 MLP，MLP 接收聚合后的向量，通过可学习的变换产生负反馈表示。
 
@@ -130,11 +119,7 @@ A^-
 
 模型保留完整交互图的表示 $`E_{\mathrm{ig}}^{\mathrm{id}}`$，再将正、负表示加权后补充进去：
 
-```math
-E_{\mathrm{ig}}^{\mathrm{id}}(\mathrm{new})
-=E_{\mathrm{ig}}^{\mathrm{id}}+\operatorname{ReLU}(w^++w^-)
-\qquad \text{(10)}
-```
+![formula10](../assets/SiMGR/formula10.png)
 
 ```math
 w^+=a[0]\odot\ddot{E}^+,\qquad
