@@ -173,6 +173,7 @@ N_{\mathrm{tail}}=\lfloor\xi N\rfloor
 
 ```math
 s_{ij}^m=\frac{(h_i^m)^\top h_j^m}{\|h_i^m\|\|h_j^m\|},\quad m\in\{v,t\},
+
 \qquad S^f=S^v\odot S^t\qquad \text{(16)}
 ```
 
