@@ -62,8 +62,10 @@ HM4SR（Hierarchical Time-Aware Mixture of Experts for Multi-Modal Sequential Re
 
 #### 3.1 推荐任务的目标
 
+公式（1）：
+
 ```math
-\boxed{v^*=\arg\max_{v\in V}P(v_{n+1}=v\mid S)}\tag{1}
+\boxed{v^*=\arg\max_{v\in V}P(v_{n+1}=v\mid S)}
 ```
 
 给定用户已发生的历史交互 $`S`$，从商品集合 $`V`$ 中选出最有可能成为下一次交互对象的商品。
@@ -81,32 +83,42 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 
 #### 3.3 BERT 提取文本特征
 
+公式（2）：
+
 ```math
-\mathbf{f}^{txt}=\mathrm{BERT}([\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L).\tag{2}
+\mathbf{f}^{txt}=\mathrm{BERT}([\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L).
 ```
 
 #### 3.4 ViT 提取图像特征
 
+公式（3）：
+
 ```math
-\mathbf{f}^{img}=\mathrm{ViT}([\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N).\tag{3}
+\mathbf{f}^{img}=\mathrm{ViT}([\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N).
 ```
 
 #### 3.5 将图文特征统一映射到 $`d`$ 维
 
-```math
-\mathbf{x}^{txt}=\mathbf{W}^{txt}\mathbf{f}^{txt}+\mathbf{b}^{txt}.\tag{4}
-```
+公式（4）：
 
 ```math
-\mathbf{x}^{img}=\mathbf{W}^{img}\mathbf{f}^{img}+\mathbf{b}^{img}.\tag{5}
+\mathbf{x}^{txt}=\mathbf{W}^{txt}\mathbf{f}^{txt}+\mathbf{b}^{txt}.
+```
+
+公式（5）：
+
+```math
+\mathbf{x}^{img}=\mathbf{W}^{img}\mathbf{f}^{img}+\mathbf{b}^{img}.
 ```
 
 
 
 #### 3.6 加入历史交互的位置编码
 
+公式（6）：
+
 ```math
-\mathbf{e}^m=\mathbf{x}^m+\mathbf{p}.\tag{6}
+\mathbf{e}^m=\mathbf{x}^m+\mathbf{p}.
 ```
 
 
@@ -121,8 +133,10 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 
 #### 4.1 拼接同一商品的三个模态
 
+公式（7）：
+
 ```math
-\mathbf{e}_{inter}=[\mathbf{e}^{id};\mathbf{e}^{txt};\mathbf{e}^{img}].\tag{7}
+\mathbf{e}_{inter}=[\mathbf{e}^{id};\mathbf{e}^{txt};\mathbf{e}^{img}].
 ```
 
 | 符号                                             | 含义                                    |
@@ -136,8 +150,10 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 
 #### 4.2 门控决定专家权重
 
+公式（9）：
+
 ```math
-\mathbf{g}^m=\mathrm{Softmax}(\mathbf{W}_{1,m}\mathbf{e}^m+\mathbf{b}_{1,m}).\tag{9}
+\mathbf{g}^m=\mathrm{Softmax}(\mathbf{W}_{1,m}\mathbf{e}^m+\mathbf{b}_{1,m}).
 ```
 
 | 符号                            | 含义                                     |
@@ -156,12 +172,14 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 
 
 
+公式（8）：
+
 ```math
 \boxed{
 \mathbf{x}_m^{inter}=\alpha_m
 \sum_{r=1}^{k_1} g_r^m
 \left(\mathbf{W}_{r,m}^{inter}\mathbf{e}_{inter}+\mathbf{b}_{r,m}^{inter}\right)
-}\tag{8}
+}
 ```
 
 | 符号                                | 含义                                                            |
@@ -180,8 +198,10 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 #### 4.4 残差连接
 
+公式（10）：
+
 ```math
-\mathbf{e}_m'=\mathbf{e}_m+\mathbf{x}_m^{inter}.\tag{10}
+\mathbf{e}_m'=\mathbf{e}_m+\mathbf{x}_m^{inter}.
 ```
 
 | 符号                  | 含义                             |
@@ -203,16 +223,20 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 #### 5.1 计算相邻交互时间间隔
 
+公式（11）：
+
 ```math
-\{a_1,a_2,\ldots,a_n\}=\{0,t_2-t_1,\ldots,t_n-t_{n-1}\}.\tag{11}
+\{a_1,a_2,\ldots,a_n\}=\{0,t_2-t_1,\ldots,t_n-t_{n-1}\}.
 ```
 
 
 
 #### 5.2 对数压缩并离散化时间间隔
 
+公式（12）：
+
 ```math
-\boxed{pos_j=\left\lfloor\mu\log(a_j+1)\right\rfloor}\tag{12}
+\boxed{pos_j=\left\lfloor\mu\log(a_j+1)\right\rfloor}
 ```
 
 | 符号                  | 含义                                                |
@@ -242,8 +266,10 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 
 
+公式（13）：
+
 ```math
-\boxed{[\mathbf{r}_{2,j}]_q=\cos\left(\frac{\ell_q t_j}{freq^{q/d}}+z_q\right)}\tag{13}
+\boxed{[\mathbf{r}_{2,j}]_q=\cos\left(\frac{\ell_q t_j}{freq^{q/d}}+z_q\right)}
 ```
 
 | 符号                            | 含义                                     |
@@ -264,8 +290,10 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 #### 5.4 时间门控分配专家权重
 
+公式（14）：
+
 ```math
-\boxed{\mathbf{g}'_j=\mathrm{Softmax}\left(\mathbf{W}_2[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_2\right)}\tag{14}
+\boxed{\mathbf{g}'_j=\mathrm{Softmax}\left(\mathbf{W}_2[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_2\right)}
 ```
 
 | 符号                                | 含义                                   |
@@ -283,8 +311,10 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 #### 5.5 拼接第一级 MoE 输出
 
+公式（15）：
+
 ```math
-\mathbf{e}_{temp}=[\mathbf{e}'_{id};\mathbf{e}'_{txt};\mathbf{e}'_{img}].\tag{15}
+\mathbf{e}_{temp}=[\mathbf{e}'_{id};\mathbf{e}'_{txt};\mathbf{e}'_{img}].
 ```
 
 | 符号                                                | 含义                                    |
@@ -297,8 +327,10 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 
 #### 5.6 时间专家逐维调整商品特征
 
+公式（16）：
+
 ```math
-\boxed{\mathbf{x}_{temp}=\sum_{r=1}^{k_2}g'_r\left(\mathbf{W}_r^{temp}\odot\mathbf{e}_{temp}\right)}\tag{16}
+\boxed{\mathbf{x}_{temp}=\sum_{r=1}^{k_2}g'_r\left(\mathbf{W}_r^{temp}\odot\mathbf{e}_{temp}\right)}
 ```
 
 
@@ -335,8 +367,10 @@ S_m=\{\mathbf{x}_{m,1}^{temp},\mathbf{x}_{m,2}^{temp},\ldots,\mathbf{x}_{m,n}^{t
 
 #### 6.2 LayerNorm 和 Dropout
 
+公式（17）：
+
 ```math
-S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).\tag{17}
+S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).
 ```
 
 | 符号                       | 含义                                         |
@@ -350,8 +384,10 @@ S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).\tag{17}
 
 #### 6.3 三个 Transformer 提取用户兴趣
 
+公式（18）：
+
 ```math
-\mathbf{H}^m=\mathrm{Transformer}_m(S'_m).\tag{18}
+\mathbf{H}^m=\mathrm{Transformer}_m(S'_m).
 ```
 
 | 符号                           | 含义                                                                |
@@ -364,8 +400,10 @@ S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).\tag{17}
 
 #### 6.4 候选商品匹配分数
 
+公式（19）：
+
 ```math
-\boxed{\hat y_v=\mathbf{H}^{id}\cdot\mathbf{x}_v^{id}+\mathbf{H}^{txt}\cdot\mathbf{x}_v^{txt}+\mathbf{H}^{img}\cdot\mathbf{x}_v^{img}}\tag{19}
+\boxed{\hat y_v=\mathbf{H}^{id}\cdot\mathbf{x}_v^{id}+\mathbf{H}^{txt}\cdot\mathbf{x}_v^{txt}+\mathbf{H}^{img}\cdot\mathbf{x}_v^{img}}
 ```
 
 | 符号                                                   | 含义                                                                     |
@@ -384,8 +422,10 @@ ID 分支得分 $`s_{id}=\mathbf{H}^{id}\cdot\mathbf{x}_v^{id}`$，文本分支 
 
 
 
+公式（20）：
+
 ```math
-L_{main}=-\sum_{v\in V}y_v\log(\hat y_v).\tag{20}
+L_{main}=-\sum_{v\in V}y_v\log(\hat y_v).
 ```
 
 | 符号       | 含义                                                                   |
@@ -415,8 +455,10 @@ L_{main}=-\sum_{v\in V}y_v\log(\hat y_v).\tag{20}
 
 知道一件商品是否属于护肤品、防晒用品等类别，可以给多模态商品表示增加监督信号。
 
+公式（21）：
+
 ```math
-\hat{\mathbf{y}}^{CP}=\mathbf{W}_{CP}[\mathbf{x}^{id};\mathbf{x}^{txt};\mathbf{x}^{img}]+\mathbf{b}_{CP}.\tag{21}
+\hat{\mathbf{y}}^{CP}=\mathbf{W}_{CP}[\mathbf{x}^{id};\mathbf{x}^{txt};\mathbf{x}^{img}]+\mathbf{b}_{CP}.
 ```
 
 | 符号                                             | 含义                                                       |
@@ -431,8 +473,10 @@ L_{main}=-\sum_{v\in V}y_v\log(\hat y_v).\tag{20}
 
 
 
+公式（22）：
+
 ```math
-L_{CP}(v)=-\sum_{c\in C}\left[y_c^{CP}\log(\hat y_c^{CP})+(1-y_c^{CP})\log(1-\hat y_c^{CP})\right].\tag{22}
+L_{CP}(v)=-\sum_{c\in C}\left[y_c^{CP}\log(\hat y_c^{CP})+(1-y_c^{CP})\log(1-\hat y_c^{CP})\right].
 ```
 
 | 符号                            | 含义                                       |
@@ -465,6 +509,8 @@ L_{CP}=\sum_{v\in S}L_{CP}(v).
 
 以 A 为锚点：正样本对是“A 的用户兴趣、防晒霜”，负样本对是“A 的用户兴趣、手柄”等。
 
+公式（23）：
+
 ```math
 \boxed{
 L_{IDCL}^{(i)}=-\log\frac{
@@ -472,7 +518,6 @@ L_{IDCL}^{(i)}=-\log\frac{
 }{
 \sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^{id},\mathbf{x}_j^{id})/\tau\right)
 }}
-\tag{23}
 ```
 
 | 符号                 | 含义                                                  |
@@ -512,8 +557,10 @@ L_{IDCL}^{(i)}=-\log\frac{
 
 
 
+公式（24）：
+
 ```math
-\boxed{\mathbf{x}_{m,j}^{temp}\leftarrow\mathbf{W}_{P,m}[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_{P,m}}\tag{24}
+\boxed{\mathbf{x}_{m,j}^{temp}\leftarrow\mathbf{W}_{P,m}[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_{P,m}}
 ```
 
 | 符号                              | 含义                                                                     |
@@ -533,6 +580,8 @@ L_{IDCL}^{(i)}=-\log\frac{
 
 
 
+公式（25）：
+
 ```math
 \boxed{
 L_{PCL}^{m,(i)}=-\log\frac{
@@ -540,7 +589,6 @@ L_{PCL}^{m,(i)}=-\log\frac{
 }{
 \sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^m,\mathbf{H}_j^{m,1})\right)
 }}
-\tag{25}
 ```
 
 | 符号                 | 含义                                                |
@@ -559,8 +607,10 @@ L_{PCL}^{m,(i)}=-\log\frac{
 
 **PCL 最终只平均文本和图像两路。**
 
+公式（26）：
+
 ```math
-\boxed{L_{PCL}=\frac{L_{PCL}^{txt}+L_{PCL}^{img}}{2}}\tag{26}
+\boxed{L_{PCL}=\frac{L_{PCL}^{txt}+L_{PCL}^{img}}{2}}
 ```
 
 | 符号            | 含义                |
@@ -574,8 +624,10 @@ L_{PCL}^{m,(i)}=-\log\frac{
 
 ### 8. 联合训练与推理
 
+公式（27）：
+
 ```math
-\boxed{L=L_{main}+\lambda_1L_{CP}+\lambda_2L_{IDCL}+\lambda_3L_{PCL}}\tag{27}
+\boxed{L=L_{main}+\lambda_1L_{CP}+\lambda_2L_{IDCL}+\lambda_3L_{PCL}}
 ```
 
 | 符号                            | 含义                                                |
