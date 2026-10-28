@@ -82,13 +82,13 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 #### 3.3 BERT 提取文本特征
 
 ```math
-\mathbf{f}^{txt}=\operatorname{BERT}([\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L).\tag{2}
+\mathbf{f}^{txt}=\mathrm{BERT}([\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L).\tag{2}
 ```
 
 #### 3.4 ViT 提取图像特征
 
 ```math
-\mathbf{f}^{img}=\operatorname{ViT}([\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N).\tag{3}
+\mathbf{f}^{img}=\mathrm{ViT}([\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N).\tag{3}
 ```
 
 #### 3.5 将图文特征统一映射到 $`d`$ 维
@@ -137,7 +137,7 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 #### 4.2 门控决定专家权重
 
 ```math
-\mathbf{g}^m=\operatorname{Softmax}(\mathbf{W}_{1,m}\mathbf{e}^m+\mathbf{b}_{1,m}).\tag{9}
+\mathbf{g}^m=\mathrm{Softmax}(\mathbf{W}_{1,m}\mathbf{e}^m+\mathbf{b}_{1,m}).\tag{9}
 ```
 
 | 符号                            | 含义                                     |
@@ -148,7 +148,7 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 | $`\mathbf{W}_{1,m}`$               | 该模态门控的可训练线性映射参数           |
 | $`\mathbf{b}_{1,m}`$               | 门控偏置                                 |
 | $`k_1`$                           | Interactive MoE 中的专家总数             |
-| $`\operatorname{Softmax}`$        | 将 $`k_1`$ 个分数变成非负、总和为 1 的权重 |
+| $`\mathrm{Softmax}`$        | 将 $`k_1`$ 个分数变成非负、总和为 1 的权重 |
 
 
 
@@ -265,7 +265,7 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 #### 5.4 时间门控分配专家权重
 
 ```math
-\boxed{\mathbf{g}'_j=\operatorname{Softmax}\left(\mathbf{W}_2[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_2\right)}\tag{14}
+\boxed{\mathbf{g}'_j=\mathrm{Softmax}\left(\mathbf{W}_2[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_2\right)}\tag{14}
 ```
 
 | 符号                                | 含义                                   |
@@ -277,7 +277,7 @@ $`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
 | $`\mathbf{W}_2`$                       | 时间门控的可训练线性映射参数           |
 | $`\mathbf{b}_2`$                       | 时间门控偏置                           |
 | $`k_2`$                               | Temporal MoE 的专家数量                |
-| $`\operatorname{Softmax}`$            | 归一化为总和为 1 的专家权重            |
+| $`\mathrm{Softmax}`$            | 归一化为总和为 1 的专家权重            |
 
 
 
@@ -336,14 +336,14 @@ S_m=\{\mathbf{x}_{m,1}^{temp},\mathbf{x}_{m,2}^{temp},\ldots,\mathbf{x}_{m,n}^{t
 #### 6.2 LayerNorm 和 Dropout
 
 ```math
-S_m'=\operatorname{Dropout}(\operatorname{LayerNorm}(S_m)).\tag{17}
+S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).\tag{17}
 ```
 
 | 符号                       | 含义                                         |
 | -------------------------- | -------------------------------------------- |
 | $`S_m`$                      | 第 $`m`$ 个模态的商品历史特征序列              |
-| $`\operatorname{LayerNorm}`$ | 对特征进行层归一化，改善后续网络训练的稳定性 |
-| $`\operatorname{Dropout}`$   | 训练时随机屏蔽部分特征，减轻过拟合           |
+| $`\mathrm{LayerNorm}`$ | 对特征进行层归一化，改善后续网络训练的稳定性 |
+| $`\mathrm{Dropout}`$   | 训练时随机屏蔽部分特征，减轻过拟合           |
 | $`S'_m`$                     | 归一化和 Dropout 后的序列                    |
 
 
@@ -351,12 +351,12 @@ S_m'=\operatorname{Dropout}(\operatorname{LayerNorm}(S_m)).\tag{17}
 #### 6.3 三个 Transformer 提取用户兴趣
 
 ```math
-\mathbf{H}^m=\operatorname{Transformer}_m(S'_m).\tag{18}
+\mathbf{H}^m=\mathrm{Transformer}_m(S'_m).\tag{18}
 ```
 
 | 符号                           | 含义                                                                |
 | ------------------------------ | ------------------------------------------------------------------- |
-| $`\operatorname{Transformer}_m`$ | 处理模态 $`m`$ 历史序列的 Transformer 编码器                          |
+| $`\mathrm{Transformer}_m`$ | 处理模态 $`m`$ 历史序列的 Transformer 编码器                          |
 | $`S'_m`$                         | 当前模态的预处理序列                                                |
 | $`\mathbf{H}^m\in\mathbb{R}^d`$    | 该模态 Transformer **最后一个历史位置**的隐藏表示，作为用户兴趣向量 |
 
@@ -468,9 +468,9 @@ L_{CP}=\sum_{v\in S}L_{CP}(v).
 ```math
 \boxed{
 L_{IDCL}^{(i)}=-\log\frac{
-\exp\left(\operatorname{sim}(\mathbf{H}_i^{id},\mathbf{x}_i^{id})/\tau\right)
+\exp\left(\mathrm{sim}(\mathbf{H}_i^{id},\mathbf{x}_i^{id})/\tau\right)
 }{
-\sum_{j=1}^{|B|}\exp\left(\operatorname{sim}(\mathbf{H}_i^{id},\mathbf{x}_j^{id})/\tau\right)
+\sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^{id},\mathbf{x}_j^{id})/\tau\right)
 }}
 \tag{23}
 ```
@@ -484,14 +484,14 @@ L_{IDCL}^{(i)}=-\log\frac{
 | $`\mathbf{H}_i^{id}`$   | 第 $`i`$ 条历史序列得到的 ID 用户兴趣向量               |
 | $`\mathbf{x}_i^{id}`$   | 第 $`i`$ 个训练样本的**真实下一商品**的初始 ID 向量     |
 | $`\mathbf{x}_j^{id}`$   | Batch 第 $`j`$ 个训练样本的真实下一商品 ID 向量         |
-| $`\operatorname{sim}`$ | 余弦相似度                                            |
+| $`\mathrm{sim}`$ | 余弦相似度                                            |
 | $`\tau`$               | 温度超参数；控制不同相似度在对比损失中的敏感程度      |
 | $`\exp,\log`$          | 指数与对数                                            |
 
 余弦相似度为：
 
 ```math
-\operatorname{sim}(\mathbf{a},\mathbf{b})=\frac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{a}\|\,\|\mathbf{b}\|}.
+\mathrm{sim}(\mathbf{a},\mathbf{b})=\frac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{a}\|\,\|\mathbf{b}\|}.
 ```
 
 其中 $`\mathbf{a},\mathbf{b}`$ 为两个向量，$`\Vert \mathbf{a}\Vert `$ 为向量长度。
@@ -529,16 +529,16 @@ L_{IDCL}^{(i)}=-\log\frac{
 
 
 
-增强序列 $`S'_m`$ 由对应的 $`\operatorname{Transformer}_m`$ 编码，输出增强后的兴趣向量。与原序列对比，**同一用户原始/增强序列为正对，不同批内样本形成负对**。
+增强序列 $`S'_m`$ 由对应的 $`\mathrm{Transformer}_m`$ 编码，输出增强后的兴趣向量。与原序列对比，**同一用户原始/增强序列为正对，不同批内样本形成负对**。
 
 
 
 ```math
 \boxed{
 L_{PCL}^{m,(i)}=-\log\frac{
-\exp\left(\operatorname{sim}(\mathbf{H}_i^m,\mathbf{H}_i^{m,1})\right)
+\exp\left(\mathrm{sim}(\mathbf{H}_i^m,\mathbf{H}_i^{m,1})\right)
 }{
-\sum_{j=1}^{|B|}\exp\left(\operatorname{sim}(\mathbf{H}_i^m,\mathbf{H}_j^{m,1})\right)
+\sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^m,\mathbf{H}_j^{m,1})\right)
 }}
 \tag{25}
 ```
@@ -553,7 +553,7 @@ L_{PCL}^{m,(i)}=-\log\frac{
 | $`i,j`$                | Batch 内的训练样本索引                              |
 | $`\lvert B\rvert`$ | 当前训练批次中的样本数量 |
 | 上标 $`1`$             | 论文对“增强表示”的命名，**不是历史序列第 1 个位置** |
-| $`\operatorname{sim}`$ | 余弦相似度，与 IDCL 中相同                          |
+| $`\mathrm{sim}`$ | 余弦相似度，与 IDCL 中相同                          |
 
 
 
