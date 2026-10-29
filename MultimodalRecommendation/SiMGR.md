@@ -337,7 +337,7 @@ R_b^-\leftarrow R_b^-+\widetilde{R}^-
 +
 \beta_{cl}(\mathcal{L}_{cl}^{u}+\mathcal{L}_{cl}^{i})
 +
-\lambda_r\|\Theta\|
+\lambda_r\lVert\Theta\rVert
 \qquad \text{(23)}
 ```
  $\mathcal{L}_{BPR}$：帮助用户对不同商品的推荐分数排序。希望交互过商品的分数大于为交互过的商品分数。
@@ -345,7 +345,7 @@ R_b^-\leftarrow R_b^-+\widetilde{R}^-
  $\mathcal{L}_{cl}$ 让不同来源的表示保持对齐。
 
  
- $\lambda_r\|\Theta\|$ 正则化项，约束模型参数，降低过拟合风险。
+ $\lambda_r\lVert\Theta\rVert$ 正则化项，约束模型参数，降低过拟合风险。
 
 
 # Experiment
