@@ -253,16 +253,16 @@ PoC_u=S_u^f\cdot\neg b_i^{\mathrm{tail}}
 展平操作，方便 Top-Q 排序。
 
 ```math
-TaC_u=\operatorname{vec}(TaC_u)
+TaC_u=\ {vec}(TaC_u)
 ```
 
 ```math
-PoC_u=\operatorname{vec}(PoC_u)
+PoC_u=\ {vec}(PoC_u)
 ```
 
 ```math
 PoPI(u)_w,\qquad
-PoPI(u)=\operatorname{top}_Q(TaC_u)
+PoPI(u)=\ {top}_Q(TaC_u)
 \qquad \text{(18)}
 ```
 
@@ -284,7 +284,7 @@ $PoPI(u)_w$ 为对应相似度分数，$`Q=20`$
 
 ```math
 NePI(u)_w,\qquad
-NePI(u)=\operatorname{top}_Q(-PoC_u)
+NePI(u)=\ {top}_Q(-PoC_u)
 \qquad \text{(20)}
 ```
 
