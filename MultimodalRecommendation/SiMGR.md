@@ -345,8 +345,7 @@ R_b^-\leftarrow R_b^-+\widetilde{R}^-
  $\mathcal{L}_{cl}$ 让不同来源的表示保持对齐。
 
  
-$\lambda_r\|\Theta\|
-\qquad$正则化项，约束模型参数，降低过拟合风险。
+$\lambda_r\|\Theta\|$正则化项，约束模型参数，降低过拟合风险。
 
 
 # Experiment
