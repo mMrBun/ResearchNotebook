@@ -305,6 +305,50 @@ R_b^+\leftarrow R_b^++\widetilde{R}^+,\qquad
 R_b^-\leftarrow R_b^-+\widetilde{R}^-
 ```
 
+### Optimization
+
+作者担心融合后的最终表示与增强交互表示对同一个用户或商品所表达的特征不够一致，于是引入对比学习，让他们保持较好的对其关系。
+
+用户侧的InfoNCE损失
+```math
+\mathcal{L}_{cl}^{u}
+=
+\sum_{u\in\mathcal{U}}
+-\log
+\frac{
+\exp(\mathbf{e}_u^{id}\cdot\mathbf{e}_u^*/\tau)
+}{
+\sum_{z\in\mathcal{U}}
+\exp(\mathbf{e}_z^{id}\cdot\mathbf{e}_z^*/\tau)
+}
+\qquad \text{(22)}
+```
+商品侧使用同样的对比学习损失。
+
+
+总损失：
+
+```math
+\mathcal{L}
+=
+\mathcal{L}_{BPR}
++
+\lambda_s\mathcal{L}_{sign}
++
+\beta_{cl}(\mathcal{L}_{cl}^{u}+\mathcal{L}_{cl}^{i})
++
+\lambda_r\|\Theta\|
+\qquad \text{(23)}
+```
+ $\mathcal{L}_{BPR}$：帮助用户对不同商品的推荐分数排序。希望交互过商品的分数大于为交互过的商品分数。
+
+ $\mathcal{L}_{cl}$ 让不同来源的表示保持对齐。
+
+ 
+$\lambda_r\|\Theta\|
+\qquad$正则化项，约束模型参数，降低过拟合风险。
+
+
 # Experiment
 
 ### 数据集和实验设置
