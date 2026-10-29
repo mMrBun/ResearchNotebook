@@ -77,7 +77,7 @@ A^+
 
 $`A^+`$ 是正图的邻接矩阵，$`D^+`$ 是正图的度矩阵。初始表示来自可学习的用户、商品 ID 向量；传播两层时，把第 0、1、2 层一起平均，得到 $`\ddot{E}^+`$。公式（7）、（8）是把矩阵计算展开到单个用户和商品。
 
-用户从正反馈邻居收集向量，根据双方在正图中的度分配权重，再求和。商品也以同样方式从相连用户那里收集信息
+将公式5拆分成用户和商品的表示如下：用户从与之相连的商品节点收集信息，商品也以同样方式从相连用户那里收集信息
 
 ```math
 \dot{\mathbf{e}}_u^{+(l+1)}
@@ -88,20 +88,55 @@ $`A^+`$ 是正图的邻接矩阵，$`D^+`$ 是正图的度矩阵。初始表示�
 ```
 
 ```math
+\dot{\mathbf{e}}_i^{+(l+1)}
+=
+\sum_{u\in\mathcal{N}_i^+}
+\frac{1}{\Gamma_{ui}}
+\dot{\mathbf{e}}_u^{+(l)}
+```
+
+```math
 \Gamma_{ui}
 =
 \sqrt{|\mathcal{N}_u^+|\,|\mathcal{N}_i^+|}
 ```
 
+对称度归一化，用来避免用户和商品连接的边数差距过大。
+
 #### 将正反馈表示沿负图传播，再进行变换。
 
-直接使用刚得到的 $`\ddot{E}^+`$ 作为输入，节点先获得正反馈信息，再通过负反馈关系收集其他节点的这些表示。
+使用刚得到的 $`\ddot{E}^+`$ 作为输入，节点先获得正反馈信息，再通过负反馈关系收集其他节点的这些表示。
 
-![formula9](../assets/SiMGR/formula9.png)
+比如用户1喜欢A不喜欢C
+负反馈图在传播时用户1可以拿到自己不喜欢的C的正反馈信息。作用是通过MLP将这个信息变为有助于推荐的特征。作者把这种负反馈关系称作异配性。
 
-作者在负图上进行一次图传播，然后加上一个 MLP，MLP 接收聚合后的向量，通过可学习的变换产生负反馈表示。
+> 同配性：连接的节点倾向于拥有相似的特征；异配性相反。
 
-这样处理是因为负反馈关系具有异配性，MLP 用来进一步变换负邻居聚合的信息。
+通过符号余弦损失约束MLP做非线性特征转换。
+
+```math
+\mathcal{L}_{\mathrm{sign}}
+=
+\begin{cases}
+1-\cos(\mathbf{e}_u^*,\mathbf{e}_i^*),
+& \text{if } (u,i)\in\mathcal{E}^+\\
+\gamma\cdot\max\left(0,\cos(\mathbf{e}_u^*,\mathbf{e}_i^*)-\psi\right),
+& \text{if } (u,i)\in\mathcal{E}^-
+\end{cases}
+\qquad \text{(4)}
+```
+
+```math
+\ddot{E}^-
+=
+\mathrm{MLP}\left(
+(D^-)^{-\frac{1}{2}}
+A^-
+(D^-)^{-\frac{1}{2}}
+\ddot{E}^+
+\right)
+\qquad \text{(9)}
+```
 
 ```math
 \text{正反馈表示}
@@ -114,17 +149,35 @@ $`A^+`$ 是正图的邻接矩阵，$`D^+`$ 是正图的度矩阵。初始表示�
 ```
 
 #### 让正负反馈增强原有交互表示
-
-模型保留完整交互图的表示 $`E_{\mathrm{ig}}^{\mathrm{id}}`$，再将正、负表示加权后补充进去：
-
-![formula10](../assets/SiMGR/formula10.png)
+ $`E_{\mathrm{ig}}^{\mathrm{id}}`$ 是原始交互图，保留了所有交互图分支。通过上面得到的 $\ddot{E}^+$ 和 $\ddot{E}^-$ 来增强原有的表示。
 
 ```math
-w^+=a[0]\odot\ddot{E}^+,\qquad
-w^-=a[1]\odot\ddot{E}^-
+E_{\mathrm{ig}}^{\mathrm{id}}(\mathrm{new})
+=
+E_{\mathrm{ig}}^{\mathrm{id}}
++
+\mathrm{ReLU}(w^+ + w^-)
+\qquad \text{(10)}
 ```
 
-注意力权重 $`a[0]`$、$`a[1]`$ 根据各节点的正负表示计算，经 softmax 后和为 1。ReLU 对每个坐标保留正值，把负值变成 0。
+```math
+w^+=\mathbf{a}[0]\odot\ddot{E}^+,\qquad
+w^-=\mathbf{a}[1]\odot\ddot{E}^-,\qquad
+\mathbf{a}=\mathcal{F}_s([\mathbf{a}^+,\mathbf{a}^-])
+```
+
+```math
+\mathbf{a}^+
+=
+\frac{\ddot{E}^+\ddot{W}^+}
+{\ddot{E}^+\ddot{W}^+ + \ddot{E}^-\ddot{W}^-},
+\qquad
+\mathbf{a}^-
+=
+\frac{\ddot{E}^-\ddot{W}^-}
+{\ddot{E}^+\ddot{W}^+ + \ddot{E}^-\ddot{W}^-}
+\qquad \text{(11)}
+```
 
 得到增强后的交互表示后，再与图文分支的表示融合：
 
@@ -132,13 +185,11 @@ w^-=a[1]\odot\ddot{E}^-
 E^*=E_{\mathrm{ig}}^{\mathrm{id}}(\mathrm{new})+\widetilde{E}
 ```
 
-图文分支先把预提取的图片、文本特征投影到相同维度，再根据交互商品聚合用户的模态特征，经过图传播和模态融合得到 $`\widetilde{E}`$。最终用用户、商品向量的内积打分。
-
 ### PST（Personalized Sign Threshold）
 
 PST 根据每个用户已有的评分计算阈值，用来替代所有用户共用的 $`\delta=3`$。
 
-先用 $`M_{ui}=\mathbb{I}(R_{ui}>0)`$ 标记哪些位置有评分，再计算该用户的评分均值和标准差：
+用bool掩码矩阵 $`M_{ui}=\mathbb{I}(R_{ui}>0)`$ 标记哪些位置有评分，再计算该用户的评分均值和标准差：
 
 ```math
 \mu_u=\frac{\sum_iR_{ui}M_{ui}}{\sum_iM_{ui}},\qquad
@@ -156,37 +207,96 @@ PST 根据每个用户已有的评分计算阈值，用来替代所有用户共�
 ```
 
 $`\nu`$ 是控制均值和标准差影响的超参数。
+这样对于同样的三分评价，对于习惯打高分的人可能是差评，对于习惯打低分的人可能是好评。
 
 ### APFI（Adaptive Pseudo Feedback Injection）
 
 APFI 利用商品的图文相似度，为正负图补充伪反馈边，缓解拆图后的稀疏性。
 
-先按商品的交互次数从少到多排序，把最少的 $`\xi`$ 比例划为长尾商品，其余划为头部商品：
+先按商品的交互次数从少到多排序，按比例 $`\xi=0.1`$ 划为长尾商品，头部商品：
 
 ```math
 N_{\mathrm{tail}}=\lfloor\xi N\rfloor
 ```
 
-论文使用 $`\xi=0.1`$，对应交互最少的 10% 商品进入长尾集合。
-
 随后，分别计算商品图片向量和文本向量之间的余弦相似度，再逐元素相乘：
 
 ```math
-s_{ij}^m=\frac{(h_i^m)^\top h_j^m}{\|h_i^m\|\|h_j^m\|},\quad m\in\{v,t\},
-
+s_{ij}^m=\frac{(h_i^m)^\top h_j^m}{\|h_i^m\|\|h_j^m\|},\quad m\in\{v,t\}
+```
+```math
 \qquad S^f=S^v\odot S^t\qquad \text{(16)}
 ```
+如果图片很相似但文本不相似，最终的相似度分数也会很低。
+最终得到一个商品-商品的相似度分数矩阵$S^f $。
+> 如果图片和文本的相似度都是负数，相乘变为正数了岂不是变成噪声了？
 
-对于每个用户，取出其历史交互商品对应的相似度行，与未交互商品比较。两类补边策略如下：
 
-| 候选商品         | 补边依据                                     |     |
-| ---------------- | -------------------------------------------- | --- |
-| 未交互的长尾商品 | 与历史商品的图文内容相似，可能只是缺少曝光   |     |
-| 未交互的头部商品 | 与历史商品的图文内容差异较大，可能不符合兴趣 |     |
+对于每个用户，取出其历史交互商品对应的相似度行，与未交互商品比较。
 
-通过 Top-Q 和阈值筛选候选，设定 $`Q=20`$。它先将历史商品与候选商品之间的相似度展开后选择。
+```math
+S_u^f=\{S_{[q,:]},\,q\in\mathcal{N}_u\},\qquad
+S_u^f\in\mathbb{R}^{|\mathcal{N}_u|\times N}
+\qquad \text{(17)}
+```
 
-正边采用高相似度候选，再用 $`\zeta^+`$ 筛选；负边通过相似度取负后选候选，再用 $`\zeta^-`$ 筛选。
+利用上面构造的长尾掩码，分别得到：
+
+```math
+TaC_u=S_u^f\cdot b_i^{\mathrm{tail}}
+```
+
+```math
+PoC_u=S_u^f\cdot\neg b_i^{\mathrm{tail}}
+```
+
+展平操作，方便 Top-Q 排序。
+
+```math
+TaC_u=\operatorname{vec}(TaC_u)
+```
+
+```math
+PoC_u=\operatorname{vec}(PoC_u)
+```
+
+```math
+PoPI(u)_w,\qquad
+PoPI(u)=\operatorname{top}_Q(TaC_u)
+\qquad \text{(18)}
+```
+
+$PoPI(u)_w$ 为对应相似度分数，$`Q=20`$
+
+伪正边的添加判断
+
+```math
+\widetilde{R}^+_{ui}
+=
+\begin{cases}
+1, & i\in PoPI(u)\ \land\ PoPI(u)_w>\zeta^+\\
+0, & \text{otherwise}
+\end{cases}
+\qquad \text{(19)}
+```
+
+与伪正反馈相反，这里选择最不相似的头部商品。
+
+```math
+NePI(u)_w,\qquad
+NePI(u)=\operatorname{top}_Q(-PoC_u)
+\qquad \text{(20)}
+```
+
+```math
+\widetilde{R}^-_{ui}
+=
+\begin{cases}
+1, & i\in NePI(u)\ \land\ NePI(u)_w<\zeta^-\\
+0, & \text{otherwise}
+\end{cases}
+\qquad \text{(21)}
+```
 
 选出的伪边分别加到原来的正负交互矩阵：
 
