@@ -4,645 +4,315 @@
 
 - 作者 Shengzhe Zhang、Liyi Chen、Dazhong Shen、Chao Wang、Hui Xiong **南京航空航天大学**、**香港科技大学（广州）**和**香港科技大学**
 
-## 解决的问题
+## 相关工作
 
-多模态推荐根据用户以往交的互去推测下一个物品，在这个交互序列中图片以及文本很丰富，但也包含了与购买兴趣无关的噪声，许多方法只利用用户行为的先后顺序，忽略了时间戳和时间间隔所体现的兴趣变化。悉数的交互又会导致训练信号不足，论文希望解决下面三个问题。
+Qiang Cui, Shu Wu, Qiang Liu, Wen Zhong, and Liang Wang. 2018. MV-RNN:  A multi-view recurrent neural network for sequential recommendation. IEEE Transactions on Knowledge and Data Engineering 32, 2 (2018), 317–331.
 
-- 兴趣相关特征筛选
+Yupeng Hou, Shanlei Mu, Wayne Xin Zhao, Yaliang Li, Bolin Ding, and Ji-Rong Wen. 2022. Towards universal sequence representation learning for recommender systems. In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 585–593.
 
-- 显式时间建模和
+Jinpeng Wang, Ziyun Zeng, Yunxiao Wang, Yuting Wang, Xingyu Lu, Tianxiang Li, Jun Yuan, Rui Zhang, Hai-Tao Zheng, and Shu-Tao Xia. 2023. MISSRec: Pretraining and transferring multi-modal interest-aware sequence representation for recommendation. In Proceedings of the 31st ACM International Conference on Multimedia. 6548–6557.
 
-- 稀疏监督
+Hengchang Hu, Wei Guo, Yong Liu, and Min-Yen Kan. 2023. Adaptive multimodalities fusion in sequential recommendation systems. In Proceedings of the 32nd ACM International Conference on Information and Knowledge Management. 843–853.
 
-## 方法
+Lanling Xu, Zhen Tian, Bingqian Li, Junjie Zhang, Jinpeng Wang, Mingchen Cai, and Wayne Xin Zhao. 2024. Sequence-level Semantic Representation Fusion for Recommender Systems. arXiv preprint arXiv:2402.18166 (2024).
 
-### 1. 问题分析
+## 问题分析
 
 已有多模态序列模型主要通过相加、拼接，或借助注意力、图网络和 MoE 融合模态。作者认为，这些方法对兴趣相关特征的筛选，以及交互时间所反映的兴趣变化考虑不足。
 
 ![HM4SR figure 1](../assets/HM4SR/figure1.png)
 
-图中商品的使用说明、包装信息和人物细节未必与购买偏好有关。若用户长期购买某品牌，近期又集中购买护肤品和夏季相关商品，仅凭行为顺序难以区分品牌偏好与季节偏好。交互稀疏也会限制监督信号，单靠下一物品预测未必能学到充分的兴趣信息。
+*多模态信息存在噪声*
 
-模型据此加入两级专家和辅助任务：
+商品的图片、描述很丰富，但有些信息和用户购买兴趣无关。
 
-- InteractiveMoE 让每个专家接收全部模态的信息，按目标模态分配专家权重，利用模态互补信息提取兴趣相关特征。
+*忽略了显式时间信息*
 
-- TemporalMoE 利用交互间隔和绝对时间调整专家权重，区分顺序相同但时间分布不同的行为，建模短间隔行为、长期变化及绝对时间上下文。
+只知道用户买了哪些商品，但无法区分购买动作发生的时间间隔。
 
-- CP、IDCL 和 PCL 分别提供类别、匹配和时间相关的监督，补充稀疏交互中的训练信号。
+*用户交互的稀疏性*
 
-### 2. 整体流程
+用户可能只买过几个商品，可用于学习的兴趣信息太少。
 
-HM4SR（Hierarchical Time-Aware Mixture of Experts for Multi-Modal Sequential Recommendation）的任务是：根据用户过去交互过的商品、商品的 ID/文本/图像，以及这些交互发生的时间，预测用户最有可能交互的下一件商品。
+## 方法
 
-**六个步骤：**
+![](../assets/HM4SR/figure3.png)
 
-1. **Initial Item Representation：** 用 ID Embedding、BERT、ViT 得到每件商品的 ID、文本、图像三种表示，并统一到 $`d`$ 维；再加入序列位置编码。
-2. **Interactive MoE：** 让专家同时看到同一件商品的三种模态，根据目标模态自身的门控权重组合专家结果，提取、强化可能与兴趣相关的特征。
-3. **Temporal MoE：** 分别编码相邻行为的时间间隔和实际时间戳，让时间信息决定专家权重，再对前一步的商品特征进行逐维调节。
-4. **User Interest Learning：** 把各历史位置处理后的商品向量分别组织成 ID、文本、图像序列，送入三个 Transformer，得到用户的三种兴趣向量。
-5. **Prediction：** 将三个用户兴趣向量分别与候选商品对应的**初始模态向量**做内积，再将三个得分相加。
-6. **Multi-Task Learning：** 用下一商品预测作为主任务，增加 CP（类别预测）、IDCL（ID 对比学习）、PCL（时间占位符对比学习）三个训练目标。
+### 1. 目标
 
-图中的例子：
-
-| 历史位置 | 商品       | 日期      | 与前一次交互的间隔 |
-| -------- | ---------- | --------- | ------------------ |
-| 1        | 洁面乳     | 1 月 1 日 | 0                  |
-| 2        | 保湿面霜   | 1 月 3 日 | 2 天               |
-| 3        | 防晒霜     | 6 月 1 日 | 约 5 个月          |
-| 4        | 晒后修复乳 | 6 月 2 日 | 1 天               |
-
-仅用购买顺序可以推测用户喜欢护肤品；引入时间后，还可能学习到近期夏季相关商品的集中交互。
-
----
-
-### 3. 初始商品表示
-
-#### 3.1 推荐任务的目标
-
-公式（1）：
+根据用户过去交互过的商品、商品的ID/文本/图像，以及这些交互发生的时间，预测用户最有可能交互的下一件商品。
 
 ```math
-\boxed{v^*=\arg\max_{v\in V}P(v_{n+1}=v\mid S)}
+v=\arg\max_{v\in\mathcal{V}}
+P(v_{|S|+1}=v\mid S)
+\qquad \text{(1)}
 ```
 
-给定用户已发生的历史交互 $`S`$，从商品集合 $`V`$ 中选出最有可能成为下一次交互对象的商品。
+### 2. 初始商品表示
 
-#### 3.2 商品 ID 表示
+#### 2.1 ID表示
 
-论文维护一个商品 ID 嵌入矩阵：
+初始化一个商品 ID 嵌入矩阵：
 
 ```math
 M_{id}\in\mathbb{R}^{|V|\times d}.
 ```
 
-- $`M_{id}`$：可学习的商品 ID Embedding 表；$`\lvert V\rvert`$ 为商品数量，$`d`$ 为表示维度。
-- $`\mathbf{x}_v^{id}\in\mathbb{R}^d`$：商品 $`v`$ 在 $`M_{id}`$ 中查到的初始 ID 向量。
-
-#### 3.3 BERT 提取文本特征
-
-公式（2）：
+#### 2.2 文本特征
 
 ```math
-\mathbf{f}^{txt}=\mathrm{BERT}([\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L).
+f_{txt}
+=
+\mathrm{BERT}\left(
+[[\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L]
+\right)
+\qquad \text{(2)}
 ```
 
-#### 3.4 ViT 提取图像特征
-
-公式（3）：
+#### 2.3 图像特征
 
 ```math
-\mathbf{f}^{img}=\mathrm{ViT}([\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N).
+f_{img}
+=
+\mathrm{ViT}\left(
+[[\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N]
+\right)
+\qquad \text{(3)}
 ```
 
-#### 3.5 将图文特征统一映射到 $`d`$ 维
-
-公式（4）：
+#### 2.4 特征纬度对齐
 
 ```math
-\mathbf{x}^{txt}=\mathbf{W}^{txt}\mathbf{f}^{txt}+\mathbf{b}^{txt}.
+x_{txt}=W_{txt}f_{txt}+b_{txt}
+\qquad \text{(4)}
 ```
-
-公式（5）：
 
 ```math
-\mathbf{x}^{img}=\mathbf{W}^{img}\mathbf{f}^{img}+\mathbf{b}^{img}.
+x_{img}=W_{img}f_{img}+b_{img}
+\qquad \text{(5)}
 ```
 
+#### 2.5 加入历史交互的位置编码
 
-
-#### 3.6 加入历史交互的位置编码
-
-公式（6）：
+对于ID嵌入、文本嵌入，以及图像嵌入加入位置信息嵌入。
 
 ```math
-\mathbf{e}^m=\mathbf{x}^m+\mathbf{p}.
+e_m=x_m+p
+\qquad \text{(6)}
 ```
 
+### 3. Interactive MoE：交互专家
 
+ ID、文本、图像互相提供补充信息，让模型学习更有用的表示。
 
-**告诉模型“这是序列中的第几次交互”。**
-
----
-
-### 4. Interactive MoE：跨模态专家
-
-商品文本和图片虽然信息丰富，但包含可能与用户兴趣无关的包装、背景、说明文字等。Interactive MoE 允许 ID、文本、图像互相提供补充信息，让模型学习更有用的表示。
-
-#### 4.1 拼接同一商品的三个模态
-
-公式（7）：
+#### 3.1 拼接三个模态
 
 ```math
-\mathbf{e}_{inter}=[\mathbf{e}^{id};\mathbf{e}^{txt};\mathbf{e}^{img}].
+e_{inter}=[e_{id};e_{txt};e_{img}]
+\qquad \text{(7)}
 ```
 
-| 符号                                             | 含义                                    |
-| ------------------------------------------------ | --------------------------------------- |
-| $`\mathbf{e}_{inter}`$                              | 拼接后的多模态输入向量                  |
-| $`inter`$                                          | Interactive，跨模态交互阶段             |
-| $`\mathbf{e}^{id},\mathbf{e}^{txt},\mathbf{e}^{img}`$ | 公式（6）得到的三个含位置编码的商品向量 |
-| $`[\ ;\ ]`$                                        | 沿特征维拼接                            |
-
-
-
-#### 4.2 门控决定专家权重
-
-公式（9）：
+#### 3.2 将多个专家的输出加权融合
 
 ```math
-\mathbf{g}^m=\mathrm{Softmax}(\mathbf{W}_{1,m}\mathbf{e}^m+\mathbf{b}_{1,m}).
+x_m^{inter}
+=
+\alpha_m\sum_{i=1}^{k_1}g_i^m\cdot
+\left(W_{i,m}^{inter}e_{inter}+b_{i,m}^{inter}\right)
+\qquad \text{(8)}
 ```
 
-| 符号                            | 含义                                     |
-| ------------------------------- | ---------------------------------------- |
-| $`\mathbf{g}^m\in\mathbb{R}^{k_1}`$ | 当前**目标模态** $`m`$ 的全部专家权重      |
-| $`g_r^m`$                         | 当前模态分配给第 $`r`$ 个专家的权重        |
-| $`\mathbf{e}^m`$                   | 当前目标模态自己的 $`d`$ 维特征            |
-| $`\mathbf{W}_{1,m}`$               | 该模态门控的可训练线性映射参数           |
-| $`\mathbf{b}_{1,m}`$               | 门控偏置                                 |
-| $`k_1`$                           | Interactive MoE 中的专家总数             |
-| $`\mathrm{Softmax}`$        | 将 $`k_1`$ 个分数变成非负、总和为 1 的权重 |
-
-
-
-#### 4.3 将多个专家的输出加权融合
-
-
-
-公式（8）：
+#### 3.3 门控决定专家权重
 
 ```math
-\boxed{
-\mathbf{x}_m^{inter}=\alpha_m
-\sum_{r=1}^{k_1} g_r^m
-\left(\mathbf{W}_{r,m}^{inter}\mathbf{e}_{inter}+\mathbf{b}_{r,m}^{inter}\right)
-}
+g^m=\mathrm{Softmax}(W_{1,m}e_m+b_{1,m})
+\qquad \text{(9)}
 ```
 
-| 符号                                | 含义                                                            |
-| ----------------------------------- | --------------------------------------------------------------- |
-| $`\mathbf{x}_m^{inter}\in\mathbb{R}^d`$ | 当前目标模态从多专家组合得到的新增特征                          |
-| $`\alpha_m`$                          | 模态 $`m`$ 的可训练交互强度系数                                   |
-| $`r=1,\ldots,k_1`$                    | 依次遍历全部 Interactive MoE 专家                               |
-| $`g_r^m`$                             | 公式（9）中目标模态为该专家分配的权重                           |
-| $`\mathbf{W}_{r,m}^{inter}`$           | 第 $`r`$ 个专家为模态 $`m`$ 学习的权重映射；把 $`3d`$ 维转换成 $`d`$ 维 |
-| $`\mathbf{b}_{r,m}^{inter}`$           | 该专家对应的偏置                                                |
-| $`\mathbf{e}_{inter}`$                 | 三个模态拼接得到的 $`3d`$ 维特征                                  |
-
-把括号里的内容记为 $`\mathbf{o}_{r,m}`$，则 $`\mathbf{o}_{r,m}=\mathbf{W}_{r,m}^{inter}\mathbf{e}_{inter}+\mathbf{b}_{r,m}^{inter}`$ 是**单个专家**的输出；对全部专家按 $`g_r^m`$ 求和后，再乘上 $`\alpha_m`$。
-
-$`\alpha_m`$ 控制新增信息的作用强度，数值由训练学得。
-
-#### 4.4 残差连接
-
-公式（10）：
+#### 3.4 残差连接
 
 ```math
-\mathbf{e}_m'=\mathbf{e}_m+\mathbf{x}_m^{inter}.
+e'_m=e_m+x_m^{inter}
+\qquad \text{(10)}
 ```
 
-| 符号                  | 含义                             |
-| --------------------- | -------------------------------- |
-| $`\mathbf{e}_m`$         | Interactive MoE 前的目标模态表示 |
-| $`\mathbf{x}_m^{inter}`$ | 专家学习的跨模态新增特征         |
-| $`\mathbf{e}_m'`$        | 加入补充特征后的更新表示         |
-| $`'`$                   | 变量更新后的标记，不是导数       |
+### 4. Temporal MoE：显式时间专家
 
-保留原有模态信息，再增加专家学到的互补特征，避免直接替换导致有用内容丢失。
+使用 **Interval Time**（相邻行为间隔）和 **Absolute Time**（绝对时间戳）进一步调整商品表示。
 
-**Interactive MoE 的输出**：对同一历史商品得到 $`\mathbf{e}'_{id}`$、$`\mathbf{e}'_{txt}`$、$`\mathbf{e}'_{img}`$，各为 $`d`$ 维。之后传给 Temporal MoE。
-
----
-
-### 5. Temporal MoE：显式时间专家
-
-两条商品序列顺序相同，也可能因为实际交互间隔不同而反映不同兴趣。使用 **Interval Time**（相邻行为间隔）和 **Absolute Time**（绝对时间戳）。
-
-#### 5.1 计算相邻交互时间间隔
-
-公式（11）：
+#### 4.1 计算相邻交互时间间隔
 
 ```math
-\{a_1,a_2,\ldots,a_n\}=\{0,t_2-t_1,\ldots,t_n-t_{n-1}\}.
+\{a_1,a_2,\ldots,a_{|S|}\}
+=
+\{0,t_2-t_1,\ldots,t_{|S|}-t_{|S|-1}\}
+\qquad \text{(11)}
 ```
 
+#### 4.2 计 算间隔的对应位置
 
-
-#### 5.2 对数压缩并离散化时间间隔
-
-公式（12）：
+为时间间隔维护一个嵌入矩阵$M_t$，根据$pos_i$ 查询相应行得到$r_1,_i$ （第i次交互的时间间隔特征向量）
 
 ```math
-\boxed{pos_j=\left\lfloor\mu\log(a_j+1)\right\rfloor}
+pos_i=\left\lfloor\mu\log(a_i+1)\right\rfloor
+\qquad \text{(12)}
 ```
 
-| 符号                  | 含义                                                |
-| --------------------- | --------------------------------------------------- |
-| $`pos_j`$               | 第 $`j`$ 次交互的离散时间间隔编号（用于查 Embedding） |
-| $`\mu`$                 | 时间间隔离散尺度超参数；论文实验设为 100            |
-| $`a_j`$                 | 实际相邻时间差                                      |
-| $`\log`$                | 对数函数，压缩较大间隔之间的数值差距                |
-| $`+1`$                  | 使 $`a_j=0`$ 时仍然能计算对数                         |
-| $`\lfloor\cdot\rfloor`$ | 向下取整，使输出成为可查表的整数编号                |
-
-真实交互间隔从分钟到几个月不等，原值跨度很大。对数压缩其数值尺度，同时保留间隔差异。
-
-模型维护可学习的时间间隔嵌入表 $`M_t`$，通过查表得到：
+#### 4.3 绝对时间编码
 
 ```math
-\mathbf{r}_{1,j}=M_t[pos_j],\qquad\mathbf{r}_{1,j}\in\mathbb{R}^d.
+r_{2,i}^{i}
+=
+\cos\left(\frac{l_i t}{freq^{i/d}}+z_i\right)
+\qquad \text{(13)}
 ```
 
-- $`M_t`$：存储各离散间隔的可学习向量的 Embedding 表。
-- $`\mathbf{r}_{1,j}`$：第 $`j`$ 个历史位置对应的**间隔时间向量**；下标 1 用来区别后面的绝对时间向量。
-- $`M_t[pos_j]`$：取出编号 $`pos_j`$ 对应的向量。
-
-
-
-#### 5.3 余弦编码绝对时间
-
-
-
-公式（13）：
+#### 4.4 时间门控分配专家权重
 
 ```math
-\boxed{[\mathbf{r}_{2,j}]_q=\cos\left(\frac{\ell_q t_j}{freq^{q/d}}+z_q\right)}
+g'=\mathrm{Softmax}\left(W_2[r_{1,i};r_{2,i}]+b_2\right)
+\qquad \text{(14)}
 ```
 
-| 符号                            | 含义                                     |
-| ------------------------------- | ---------------------------------------- |
-| $`\mathbf{r}_{2,j}\in\mathbb{R}^d`$ | 第 $`j`$ 次交互的**绝对时间编码向量**      |
-| $`[\mathbf{r}_{2,j}]_q`$           | 该时间向量的第 $`q`$ 个分量                |
-| $`q`$                             | 时间向量的维度索引，与交互位置 $`j`$ 不同  |
-| $`t_j`$                           | 第 $`j`$ 次交互的绝对时间数值              |
-| $`\cos`$                          | 余弦函数，得到随时间变化的编码值         |
-| $`\ell_q`$                        | 第 $`q`$ 个维度的可训练时间缩放参数        |
-| $`z_q`$                           | 第 $`q`$ 个维度的可训练相位偏置            |
-| $`freq`$                          | 控制频率尺度的超参数；论文实验设为 10000 |
-| $`q/d`$                           | 当前维度编号与总维度数的比值             |
-
-不同维度用不同频率和相位来表达时间，产生随绝对时间变化的特征模式。它**可能**有利于利用周期性或季节性信息，
-
-
-
-#### 5.4 时间门控分配专家权重
-
-公式（14）：
+#### 4.5 拼接 Interactive MoE 输出
 
 ```math
-\boxed{\mathbf{g}'_j=\mathrm{Softmax}\left(\mathbf{W}_2[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_2\right)}
+e_{temp}=[e'_{id};e'_{txt};e'_{img}]
+\qquad \text{(15)}
 ```
 
-| 符号                                | 含义                                   |
-| ----------------------------------- | -------------------------------------- |
-| $`\mathbf{g}'_j\in\mathbb{R}^{k_2}`$    | 第 $`j`$ 次交互的时间专家权重向量        |
-| $`g'_{j,r}`$                          | 第 $`j`$ 次交互对第 $`r`$ 个时间专家的权重 |
-| $`\mathbf{r}_{1,j},\mathbf{r}_{2,j}`$   | 间隔时间向量、绝对时间向量             |
-| $`[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]`$ | 拼接后的 $`2d`$ 维时间向量               |
-| $`\mathbf{W}_2`$                       | 时间门控的可训练线性映射参数           |
-| $`\mathbf{b}_2`$                       | 时间门控偏置                           |
-| $`k_2`$                               | Temporal MoE 的专家数量                |
-| $`\mathrm{Softmax}`$            | 归一化为总和为 1 的专家权重            |
-
-
-
-#### 5.5 拼接第一级 MoE 输出
-
-公式（15）：
+#### 4.6 时间专家逐维调整商品特征
 
 ```math
-\mathbf{e}_{temp}=[\mathbf{e}'_{id};\mathbf{e}'_{txt};\mathbf{e}'_{img}].
+[x_{id}^{temp};x_{txt}^{temp};x_{img}^{temp}]
+=x_{temp}
+=
+\sum_{i=1}^{k_2}g'_i\cdot
+\left(W_i^{temp}\odot e_{temp}\right)
+\qquad \text{(16)}
 ```
 
-| 符号                                                | 含义                                    |
-| --------------------------------------------------- | --------------------------------------- |
-| $`\mathbf{e}_{temp}`$                                  | Temporal MoE 接收的 $`3d`$ 维商品特征     |
-| $`\mathbf{e}'_{id},\mathbf{e}'_{txt},\mathbf{e}'_{img}`$ | Interactive MoE 增强后的三个 $`d`$ 维向量 |
-| $`temp`$                                              | Temporal 阶段                           |
+### 5. Transformer 序列建模与预测
 
+为了学习用户兴趣演变，使用transformer编码行为序列中的信息。
 
-
-#### 5.6 时间专家逐维调整商品特征
-
-公式（16）：
+#### 5.1 组织三个模态序列
 
 ```math
-\boxed{\mathbf{x}_{temp}=\sum_{r=1}^{k_2}g'_r\left(\mathbf{W}_r^{temp}\odot\mathbf{e}_{temp}\right)}
+S'_m=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m))
+\qquad \text{(17)}
 ```
-
-
-
-| 符号                                  | 含义                                      |
-| ------------------------------------- | ----------------------------------------- |
-| $`\mathbf{x}_{temp}\in\mathbb{R}^{3d}`$   | 融合时间条件后的完整商品特征              |
-| $`\mathbf{x}_m^{temp}\in\mathbb{R}^d`$    | 拆分后，模态 $`m`$ 的时间感知特征           |
-| $`r=1,\ldots,k_2`$                      | 时间专家编号                              |
-| $`g'_r`$（或 $`g'_{j,r}`$）               | 门控分配给对应时间专家的权重              |
-| $`\mathbf{W}_r^{temp}\in\mathbb{R}^{3d}`$ | 第 $`r`$ 个时间专家的可学习**逐维缩放向量** |
-| $`\odot`$                               | 对应分量逐元素相乘                        |
-| $`\mathbf{e}_{temp}`$                    | 第一级 MoE 输出拼接后的商品特征           |
-
-
-
----
-
-### 6. Transformer 序列建模与预测
-
-经过两级 MoE，**每一件历史商品**都有了三个时间感知特征。接下来，按历史顺序把同模态的特征放在一起，学习**整条用户行为序列**。
-
-#### 6.1 组织三个模态序列
 
 ```math
-S_m=\{\mathbf{x}_{m,1}^{temp},\mathbf{x}_{m,2}^{temp},\ldots,\mathbf{x}_{m,n}^{temp}\},\quad m\in\{id,txt,img\}.
+H^m=\mathrm{Transformer}_m(S'_m)
+\qquad \text{(18)}
 ```
 
-- $`S_m`$：模态 $`m`$ 的商品历史特征序列。
-- $`\mathbf{x}_{m,j}^{temp}`$：第 $`j`$ 个历史商品在模态 $`m`$ 下的时间感知表示。
-- $`n`$：历史交互数。
-
-
-
-#### 6.2 LayerNorm 和 Dropout
-
-公式（17）：
+#### 5.2 候选商品匹配分数
 
 ```math
-S_m'=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m)).
+\hat{y}_v
+=
+H^{id}\cdot x_{id}
++H^{txt}\cdot x_{txt}
++H^{img}\cdot x_{img}
+\qquad \text{(19)}
 ```
 
-| 符号                       | 含义                                         |
-| -------------------------- | -------------------------------------------- |
-| $`S_m`$                      | 第 $`m`$ 个模态的商品历史特征序列              |
-| $`\mathrm{LayerNorm}`$ | 对特征进行层归一化，改善后续网络训练的稳定性 |
-| $`\mathrm{Dropout}`$   | 训练时随机屏蔽部分特征，减轻过拟合           |
-| $`S'_m`$                     | 归一化和 Dropout 后的序列                    |
+### 6. 多任务学习
 
-
-
-#### 6.3 三个 Transformer 提取用户兴趣
-
-公式（18）：
+#### 6.1 主推荐交叉熵损失
 
 ```math
-\mathbf{H}^m=\mathrm{Transformer}_m(S'_m).
+L_{main}
+=
+-\sum_{v\in\mathcal{V}}y_v\log(\hat{y}_v)
+\qquad \text{(20)}
 ```
 
-| 符号                           | 含义                                                                |
-| ------------------------------ | ------------------------------------------------------------------- |
-| $`\mathrm{Transformer}_m`$ | 处理模态 $`m`$ 历史序列的 Transformer 编码器                          |
-| $`S'_m`$                         | 当前模态的预处理序列                                                |
-| $`\mathbf{H}^m\in\mathbb{R}^d`$    | 该模态 Transformer **最后一个历史位置**的隐藏表示，作为用户兴趣向量 |
-
-三个输出为 $`\mathbf{H}^{id}`$、$`\mathbf{H}^{txt}`$、$`\mathbf{H}^{img}`$
-
-#### 6.4 候选商品匹配分数
-
-公式（19）：
-
-```math
-\boxed{\hat y_v=\mathbf{H}^{id}\cdot\mathbf{x}_v^{id}+\mathbf{H}^{txt}\cdot\mathbf{x}_v^{txt}+\mathbf{H}^{img}\cdot\mathbf{x}_v^{img}}
-```
-
-| 符号                                                   | 含义                                                                     |
-| ------------------------------------------------------ | ------------------------------------------------------------------------ |
-| $`\hat y_v`$                                             | 候选商品 $`v`$ 的**匹配分数 / logit**                                      |
-| $`v`$                                                    | 正在被评估的候选商品                                                     |
-| $`\mathbf{H}^{id},\mathbf{H}^{txt},\mathbf{H}^{img}`$       | 用户在三个模态下的 $`d`$ 维兴趣向量                                        |
-| $`\mathbf{x}_v^{id},\mathbf{x}_v^{txt},\mathbf{x}_v^{img}`$ | **候选商品的初始** ID、文本、图片特征，而不是其历史位置经两级 MoE 的输出 |
-| $`\cdot`$                                                | 向量内积，两个 $`d`$ 维向量得到一个数                                      |
-
-ID 分支得分 $`s_{id}=\mathbf{H}^{id}\cdot\mathbf{x}_v^{id}`$，文本分支 $`s_{txt}=\mathbf{H}^{txt}\cdot\mathbf{x}_v^{txt}`$，图像分支 $`s_{img}=\mathbf{H}^{img}\cdot\mathbf{x}_v^{img}`$，再相加 $`\hat y_v=s_{id}+s_{txt}+s_{img}`$。
-
-
-
-#### 6.5 主推荐交叉熵损失
-
-
-
-公式（20）：
-
-```math
-L_{main}=-\sum_{v\in V}y_v\log(\hat y_v).
-```
-
-| 符号       | 含义                                                                   |
-| ---------- | ---------------------------------------------------------------------- |
-| $`L_{main}`$ | 下一商品预测任务的损失                                                 |
-| $`V`$        | 候选商品全集                                                           |
-| $`v`$        | 候选商品编号                                                           |
-| $`y_v`$      | 当前候选商品是否为真实下一目标的监督标签（常见 one-hot 形式为 0 或 1） |
-| $`\hat y_v`$ | 论文沿用的预测符号，但公式（19）实际计算的是**未归一化分数**           |
-| $`\log`$     | 自然对数；$`\sum_{v\in V}`$ 对全部候选商品求和                           |
-
-将三个模态的 logit 相加，通过下一商品预测的交叉熵进行训练。
-
----
-
-### 7. 多任务学习
-
-仅依赖下一商品标签时，短序列或低频商品提供的训练信号有限。作者设计三个辅助任务：
-
-| 任务                                    | 要学什么                     | 用什么当监督                       |
-| --------------------------------------- | ---------------------------- | ---------------------------------- |
-| CP（Category Prediction）               | 商品所属类别                 | 真实商品类别标签                   |
-| IDCL（Contrastive Learning on ID）      | 用户兴趣与真实下一商品的匹配 | 批内真实目标商品与其他样本目标商品 |
-| PCL（Placeholder Contrastive Learning） | 时间特征与模态表示的关联     | 原序列与时间占位符增强序列的一致性 |
-
-#### 7.1 CP：类别预测
+#### 6.2 CP：类别预测
 
 知道一件商品是否属于护肤品、防晒用品等类别，可以给多模态商品表示增加监督信号。
 
-公式（21）：
-
 ```math
-\hat{\mathbf{y}}^{CP}=\mathbf{W}_{CP}[\mathbf{x}^{id};\mathbf{x}^{txt};\mathbf{x}^{img}]+\mathbf{b}_{CP}.
+\hat{y}^{CP}
+=
+W_{CP}[x_{id};x_{txt};x_{img}]+b_{CP}
+\qquad \text{(21)}
 ```
 
-| 符号                                             | 含义                                                       |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| $`\hat{\mathbf{y}}^{CP}`$                           | 对所有商品类别得到的分类输出（按概率解释前还需要 Sigmoid） |
-| $`CP`$                                             | Category Prediction                                        |
-| $`\mathbf{W}_{CP}`$ | 分类层的可训练权重，将 $`3d`$ 维特征映射到 $`\lvert C\rvert`$ 个类别的输出 |
-| $`\mathbf{b}_{CP}`$                                 | 分类偏置                                                   |
-| $`\mathbf{x}^{id},\mathbf{x}^{txt},\mathbf{x}^{img}`$ | 某件**历史商品的初始**三种模态向量                         |
-| $`C`$                                              | 商品类别集合                                               |
-| $`\lvert C\rvert`$ | 商品类别的数量 |
-
-
-
-公式（22）：
-
 ```math
-L_{CP}(v)=-\sum_{c\in C}\left[y_c^{CP}\log(\hat y_c^{CP})+(1-y_c^{CP})\log(1-\hat y_c^{CP})\right].
+L_{CP}(v)
+=
+-\sum_{c\in\mathcal{C}}
+\left[
+y_c^{CP}\log(\hat{y}_c^{CP})
++(1-y_c^{CP})\log(1-\hat{y}_c^{CP})
+\right]
+\qquad \text{(22)}
 ```
 
-| 符号                            | 含义                                       |
-| ------------------------------- | ------------------------------------------ |
-| $`L_{CP}(v)`$                     | 历史商品 $`v`$ 的分类损失                    |
-| $`c\in C`$                        | 当前判断的一个商品类别                     |
-| $`y_c^{CP}`$                      | 是否真实属于类别 $`c`$，取 0 或 1            |
-| $`\hat y_c^{CP}`$                 | 模型预测属于类别 $`c`$ 的概率                |
-| $`1-y_c^{CP}`$、$`1-\hat y_c^{CP}`$ | 分别对应“不属于该类别”的真实标签与预测概率 |
+#### 6.3 IDCL：ID 对比学习
 
-比如一件防晒霜既属于“护肤”又属于“防晒”，两类都可标注为 1，而“电子产品”标注为 0。对序列内所有商品再求和：
+用户的历史兴趣表示应该和他真正购买的下一件商品更接近，而与其他不匹配的商品更远。
 
 ```math
-L_{CP}=\sum_{v\in S}L_{CP}(v).
-```
-
-
-
-#### 7.2 IDCL：ID 对比学习
-
-同一训练样本的“历史序列兴趣”和“真实下一商品 ID 特征”构成正样本对；同一 Batch 其他样本的目标商品可用于构造负样本对。
-
-例如当前 Batch 包含三条样本：
-
-| 批内样本 | 历史兴趣 | 真实下一商品 |
-| -------- | -------- | ------------ |
-| A        | 护肤品   | 防晒霜       |
-| B        | 游戏设备 | 手柄         |
-| C        | 厨房用品 | 电饭煲       |
-
-以 A 为锚点：正样本对是“A 的用户兴趣、防晒霜”，负样本对是“A 的用户兴趣、手柄”等。
-
-公式（23）：
-
-```math
-\boxed{
-L_{IDCL}^{(i)}=-\log\frac{
-\exp\left(\mathrm{sim}(\mathbf{H}_i^{id},\mathbf{x}_i^{id})/\tau\right)
+L_{IDCL}
+=
+-\log
+\frac{
+\exp\left(\mathrm{sim}(H_i^{id},x_i^{id})/\tau\right)
 }{
-\sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^{id},\mathbf{x}_j^{id})/\tau\right)
-}}
+\sum_{j=1}^{|B|}
+\exp\left(\mathrm{sim}(H_i^{id},x_j^{id})/\tau\right)
+}
+\qquad \text{(23)}
 ```
 
-| 符号                 | 含义                                                  |
-| -------------------- | ----------------------------------------------------- |
-| $`L_{IDCL}^{(i)}`$     | 当前批内样本 $`i`$ 的 ID 对比损失；原文省略批平均的记法 |
-| $`B,\lvert B\rvert`$ | 当前训练批次及其中的样本数量 |
-| $`i`$                  | 当前用户序列在 Batch 内的编号，**不是**历史位置编号   |
-| $`j`$                  | 用来遍历批内各训练样本的编号                          |
-| $`\mathbf{H}_i^{id}`$   | 第 $`i`$ 条历史序列得到的 ID 用户兴趣向量               |
-| $`\mathbf{x}_i^{id}`$   | 第 $`i`$ 个训练样本的**真实下一商品**的初始 ID 向量     |
-| $`\mathbf{x}_j^{id}`$   | Batch 第 $`j`$ 个训练样本的真实下一商品 ID 向量         |
-| $`\mathrm{sim}`$ | 余弦相似度                                            |
-| $`\tau`$               | 温度超参数；控制不同相似度在对比损失中的敏感程度      |
-| $`\exp,\log`$          | 指数与对数                                            |
-
-余弦相似度为：
+#### 6.4 PCL：时间占位符对比学习
 
 ```math
-\mathrm{sim}(\mathbf{a},\mathbf{b})=\frac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{a}\|\,\|\mathbf{b}\|}.
+x_{m,i}^{temp}
+\leftarrow
+W_{P,m}[r_{1,i};r_{2,i}]+b_{P,m}
+\qquad \text{(24)}
 ```
-
-其中 $`\mathbf{a},\mathbf{b}`$ 为两个向量，$`\Vert \mathbf{a}\Vert `$ 为向量长度。
-
-
-
-#### 7.3 PCL：时间占位符对比学习
-
-从用户历史序列中按比例 $`\beta`$ 随机选择一些位置，删去这些位置原有的商品内容表示，改用对应的时间向量投影作为占位符 $`[TP]`$；用原始序列和增强序列做对比学习，使时间信息能参与用户兴趣表示的学习。
-
-```text
-原始序列 S ：  洁面乳  →  面霜  →  防晒霜  →  修复乳
-增强序列 S'：  洁面乳  →  面霜  →   [TP]   →  修复乳
-
-[TP] 不是随便放一个固定空向量，而是由该位置的
-时间间隔嵌入和绝对时间嵌入投影得到。
-```
-
-
-
-公式（24）：
 
 ```math
-\boxed{\mathbf{x}_{m,j}^{temp}\leftarrow\mathbf{W}_{P,m}[\mathbf{r}_{1,j};\mathbf{r}_{2,j}]+\mathbf{b}_{P,m}}
-```
-
-| 符号                              | 含义                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| $`\mathbf{x}_{m,j}^{temp}`$          | 被选中位置原有的商品模态特征；在增强序列中被替换                         |
-| $`\leftarrow`$                      | 赋值/替换操作，不是数学上的等价变形                                      |
-| $`P`$                               | Placeholder（占位符）                                                    |
-| $`\mathbf{W}_{P,m}`$                 | 模态 $`m`$ 的占位符投影权重，将 $`2d`$ 维时间特征映射到 $`d`$ 维               |
-| $`\mathbf{b}_{P,m}`$                 | 占位符投影偏置                                                           |
-| $`\mathbf{r}_{1,j},\mathbf{r}_{2,j}`$ | 当前历史位置的时间间隔向量、绝对时间向量                                 |
-| $`m,j`$                             | 当前模态和历史位置                                                       |
-| $`\beta`$                           | 随机替换历史位置的比例（虽未直接写在式 24 中，但用于决定哪些位置执行它） |
-
-
-
-增强序列 $`S'_m`$ 由对应的 $`\mathrm{Transformer}_m`$ 编码，输出增强后的兴趣向量。与原序列对比，**同一用户原始/增强序列为正对，不同批内样本形成负对**。
-
-
-
-公式（25）：
-
-```math
-\boxed{
-L_{PCL}^{m,(i)}=-\log\frac{
-\exp\left(\mathrm{sim}(\mathbf{H}_i^m,\mathbf{H}_i^{m,1})\right)
+L_{PCL}^{m}
+=
+-\log
+\frac{
+\exp\left(\mathrm{sim}(H_i^m,H_i^{m,1})\right)
 }{
-\sum_{j=1}^{|B|}\exp\left(\mathrm{sim}(\mathbf{H}_i^m,\mathbf{H}_j^{m,1})\right)
-}}
+\sum_{j=1}^{|B|}
+\exp\left(\mathrm{sim}(H_i^m,H_j^{m,1})\right)
+}
+\qquad \text{(25)}
 ```
-
-| 符号                 | 含义                                                |
-| -------------------- | --------------------------------------------------- |
-| $`L_{PCL}^{m,(i)}`$    | 模态 $`m`$、样本 $`i`$ 的时间占位符对比损失             |
-| $`\mathbf{H}_i^m`$      | 样本 $`i`$ 原始历史序列的用户兴趣向量                 |
-| $`\mathbf{H}_i^{m,1}`$  | 同一样本在时间占位符增强后得到的兴趣向量            |
-| $`\mathbf{H}_j^{m,1}`$  | Batch 内第 $`j`$ 个样本的增强序列兴趣向量             |
-| $`m`$                  | 当前模态                                            |
-| $`i,j`$                | Batch 内的训练样本索引                              |
-| $`\lvert B\rvert`$ | 当前训练批次中的样本数量 |
-| 上标 $`1`$             | 论文对“增强表示”的命名，**不是历史序列第 1 个位置** |
-| $`\mathrm{sim}`$ | 余弦相似度，与 IDCL 中相同                          |
-
-
-
-**PCL 最终只平均文本和图像两路。**
-
-公式（26）：
 
 ```math
-\boxed{L_{PCL}=\frac{L_{PCL}^{txt}+L_{PCL}^{img}}{2}}
+L_{PCL}
+=
+\frac{L_{PCL}^{txt}+L_{PCL}^{img}}{2}
+\qquad \text{(26)}
 ```
 
-| 符号            | 含义                |
-| --------------- | ------------------- |
-| $`L_{PCL}`$       | PCL 最终损失        |
-| $`L_{PCL}^{txt}`$ | 文本分支的 PCL 损失 |
-| $`L_{PCL}^{img}`$ | 图像分支的 PCL 损失 |
-| $`2`$             | 对两种模态求平均    |
+作者把这一任务集中用于加强显式时间信息与文本、图像表示之间的联系。
 
----
-
-### 8. 联合训练与推理
-
-公式（27）：
+### 7. 联合训练与推理
 
 ```math
-\boxed{L=L_{main}+\lambda_1L_{CP}+\lambda_2L_{IDCL}+\lambda_3L_{PCL}}
+L
+=
+L_{main}
++\lambda_1L_{CP}
++\lambda_2L_{IDCL}
++\lambda_3L_{PCL}
+\qquad \text{(27)}
 ```
-
-| 符号                            | 含义                                                |
-| ------------------------------- | --------------------------------------------------- |
-| $`L`$                             | 总训练损失                                          |
-| $`L_{main}`$                      | 下一商品预测的主损失                                |
-| $`L_{CP}`$                        | 类别预测损失                                        |
-| $`L_{IDCL}`$                      | ID 对比学习损失                                     |
-| $`L_{PCL}`$                       | 占位符对比学习损失                                  |
-| $`\lambda_1,\lambda_2,\lambda_3`$ | 分别控制三个辅助目标权重的超参数（希腊字母 Lambda） |
-
-这些损失共同用于反向传播和更新可训练参数；预提取的 BERT/ViT 特征保持固定。训练时使用四项损失，**推理时主要通过主推荐网络为候选商品计算分数，不需要再计算辅助损失**。
 
 实现设置：batch size 为 1024，隐藏维度 64，最大历史序列长度 50，Transformer 注意力头数及层数均为 2；$`k_1,k_2\in\{2,4,6,8,12\}`$ 进行搜索；$`\mu=100`$，$`freq=10000`$。
-
 
 ## 结果
 
