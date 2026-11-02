@@ -46,11 +46,11 @@ Lanling Xu, Zhen Tian, Bingqian Li, Junjie Zhang, Jinpeng Wang, Mingchen Cai, an
 
 <summary>公式</summary>
 
-```math
+$$
 v=\arg\max_{v\in\mathcal{V}}
 P(v_{|S|+1}=v\mid S)
 \qquad \text{(1)}
-```
+$$
 </details>
 
 
@@ -61,9 +61,9 @@ P(v_{|S|+1}=v\mid S)
 
 初始化一个商品 ID 嵌入矩阵：
 
-```math
+$$
 M_{id}\in\mathbb{R}^{|V|\times d}.
-```
+$$
 
 
 
@@ -73,14 +73,14 @@ M_{id}\in\mathbb{R}^{|V|\times d}.
 
 <summary>公式</summary>
 
-```math
+$$
 f_{txt}
 =
 \mathrm{BERT}\left(
 [[\mathrm{CLS}]_{txt};w_1;w_2;\ldots;w_L]
 \right)
 \qquad \text{(2)}
-```
+$$
 
 </details>
 
@@ -91,14 +91,14 @@ f_{txt}
 
 <summary>公式</summary>
 
-```math
+$$
 f_{img}
 =
 \mathrm{ViT}\left(
 [[\mathrm{CLS}]_{img};p_1;p_2;\ldots;p_N]
 \right)
 \qquad \text{(3)}
-```
+$$
 
 </details>
 
@@ -108,15 +108,15 @@ f_{img}
 
 <summary>公式</summary>
 
-```math
+$$
 x_{txt}=W_{txt}f_{txt}+b_{txt}
 \qquad \text{(4)}
-```
+$$
 
-```math
+$$
 x_{img}=W_{img}f_{img}+b_{img}
 \qquad \text{(5)}
-```
+$$
 
 </details>
 
@@ -129,10 +129,10 @@ x_{img}=W_{img}f_{img}+b_{img}
 
 <summary>公式</summary>
 
-```math
+$$
 e_m=x_m+p
 \qquad \text{(6)}
-```
+$$
 
 </details>
 
@@ -147,10 +147,10 @@ e_m=x_m+p
 
 <summary>公式</summary>
 
-```math
+$$
 e_{inter}=[e_{id};e_{txt};e_{img}]
 \qquad \text{(7)}
-```
+$$
 
 </details>
 
@@ -163,13 +163,13 @@ e_{inter}=[e_{id};e_{txt};e_{img}]
 
 $α_m$用  于控制模态 m上的模态交互强度
 
-```math
+$$
 x_m^{inter}
 =
 \alpha_m\sum_{i=1}^{k_1}g_i^m\cdot
 \left(W_{i,m}^{inter}e_{inter}+b_{i,m}^{inter}\right)
 \qquad \text{(8)}
-```
+$$
 
 </details>
 
@@ -180,10 +180,10 @@ x_m^{inter}
 
 <summary>公式</summary>
 
-```math
+$$
 g^m=\mathrm{Softmax}(W_{1,m}e_m+b_{1,m})
 \qquad \text{(9)}
-```
+$$
 
 </details>
 
@@ -194,10 +194,10 @@ g^m=\mathrm{Softmax}(W_{1,m}e_m+b_{1,m})
 
 <summary>公式</summary>
 
-```math
+$$
 e'_m=e_m+x_m^{inter}
 \qquad \text{(10)}
-```
+$$
 
 </details>
 
@@ -212,12 +212,12 @@ e'_m=e_m+x_m^{inter}
 
 <summary>公式</summary>
 
-```math
+$$
 \{a_1,a_2,\ldots,a_{|S|}\}
 =
 \{0,t_2-t_1,\ldots,t_{|S|}-t_{|S|-1}\}
 \qquad \text{(11)}
-```
+$$
 
 </details>
 
@@ -230,10 +230,10 @@ e'_m=e_m+x_m^{inter}
 
 <summary>公式</summary>
 
-```math
+$$
 pos_i=\left\lfloor\mu\log(a_i+1)\right\rfloor
 \qquad \text{(12)}
-```
+$$
 
 </details>
 
@@ -244,12 +244,12 @@ pos_i=\left\lfloor\mu\log(a_i+1)\right\rfloor
 
 <summary>公式</summary>
 
-```math
+$$
 r_{2,i}^{i}
 =
 \cos\left(\frac{l_i t}{freq^{i/d}}+z_i\right)
 \qquad \text{(13)}
-```
+$$
 
 </details>
 
@@ -260,10 +260,10 @@ r_{2,i}^{i}
 
 <summary>公式</summary>
 
-```math
+$$
 g'=\mathrm{Softmax}\left(W_2[r_{1,i};r_{2,i}]+b_2\right)
 \qquad \text{(14)}
-```
+$$
 
 </details>
 
@@ -274,10 +274,10 @@ g'=\mathrm{Softmax}\left(W_2[r_{1,i};r_{2,i}]+b_2\right)
 
 <summary>公式</summary>
 
-```math
+$$
 e_{temp}=[e'_{id};e'_{txt};e'_{img}]
 \qquad \text{(15)}
-```
+$$
 
 </details>
 
@@ -288,14 +288,14 @@ e_{temp}=[e'_{id};e'_{txt};e'_{img}]
 
 <summary>公式</summary>
 
-```math
+$$
 [x_{id}^{temp};x_{txt}^{temp};x_{img}^{temp}]
 =x_{temp}
 =
 \sum_{i=1}^{k_2}g'_i\cdot
 \left(W_i^{temp}\odot e_{temp}\right)
 \qquad \text{(16)}
-```
+$$
 
 </details>
 
@@ -310,15 +310,15 @@ e_{temp}=[e'_{id};e'_{txt};e'_{img}]
 
 <summary>公式</summary>
 
-```math
+$$
 S'_m=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m))
 \qquad \text{(17)}
-```
+$$
 
-```math
+$$
 H^m=\mathrm{Transformer}_m(S'_m)
 \qquad \text{(18)}
-```
+$$
 
 </details>
 
@@ -329,14 +329,14 @@ H^m=\mathrm{Transformer}_m(S'_m)
 
 <summary>公式</summary>
 
-```math
+$$
 \hat{y}_v
 =
 H^{id}\cdot x_{id}
 +H^{txt}\cdot x_{txt}
 +H^{img}\cdot x_{img}
 \qquad \text{(19)}
-```
+$$
 
 </details>
 
@@ -351,12 +351,12 @@ H^{id}\cdot x_{id}
 
 <summary>公式</summary>
 
-```math
+$$
 L_{main}
 =
 -\sum_{v\in\mathcal{V}}y_v\log(\hat{y}_v)
 \qquad \text{(20)}
-```
+$$
 
 </details>
 
@@ -369,15 +369,15 @@ L_{main}
 
 <summary>公式</summary>
 
-```math
+$$
 \hat{y}^{CP}
 =
 W_{CP}[x_{id};x_{txt};x_{img}]+b_{CP}
 \qquad \text{(21)}
-```
+$$
 输入是商品的3d纬初始多模态表示，输出是C个类别的预测值。
 
-```math
+$$
 L_{CP}(v)
 =
 -\sum_{c\in\mathcal{C}}
@@ -386,7 +386,7 @@ y_c^{CP}\log(\hat{y}_c^{CP})
 +(1-y_c^{CP})\log(1-\hat{y}_c^{CP})
 \right]
 \qquad \text{(22)}
-```
+$$
 利用二元交叉熵损失来促进多标签类别信息。
 
 </details>
@@ -400,7 +400,7 @@ y_c^{CP}\log(\hat{y}_c^{CP})
 
 <summary>公式</summary>
 
-```math
+$$
 L_{IDCL}
 =
 -\log
@@ -411,7 +411,7 @@ L_{IDCL}
 \exp\left(\mathrm{sim}(H_i^{id},x_j^{id})/\tau\right)
 }
 \qquad \text{(23)}
-```
+$$
 
 
 | 样本 | 用户历史兴趣 | 真实下一件商品 |
@@ -441,15 +441,15 @@ L_{IDCL}
 <summary>公式</summary>
 
 生成时间占位符：
-```math
+$$
 x_{m,i}^{temp}
 \leftarrow
 W_{P,m}[r_{1,i};r_{2,i}]+b_{P,m}
 \qquad \text{(24)}
-```
+$$
 
 对比对象：原始序列经过Transformer后的兴趣表示与带有时间占位符的序列经过Transformer后的兴趣表示。
-```math
+$$
 L_{PCL}^{m}
 =
 -\log
@@ -460,15 +460,15 @@ L_{PCL}^{m}
 \exp\left(\mathrm{sim}(H_i^m,H_j^{m,1})\right)
 }
 \qquad \text{(25)}
-```
+$$
 
 作者把这一任务集中用于加强显式时间信息与文本、图像表示之间的联系。
-```math
+$$
 L_{PCL}
 =
 \frac{L_{PCL}^{txt}+L_{PCL}^{img}}{2}
 \qquad \text{(26)}
-```
+$$
 
 </details>
 
@@ -477,7 +477,7 @@ L_{PCL}
 
 ### 7. 联合训练与推理
 
-```math
+$$
 L
 =
 L_{main}
@@ -485,7 +485,7 @@ L_{main}
 +\lambda_2L_{IDCL}
 +\lambda_3L_{PCL}
 \qquad \text{(27)}
-```
+$$
 
 
 
