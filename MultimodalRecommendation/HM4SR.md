@@ -168,6 +168,7 @@ x_m^{inter}
 \left(W_{i,m}^{inter}e_{inter}+b_{i,m}^{inter}\right)
 \qquad \text{(8)}
 ```
+
 $α_m$用  于控制模态 m上的模态交互强度
 
 </details>
