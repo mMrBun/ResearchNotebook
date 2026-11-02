@@ -161,6 +161,8 @@ e_{inter}=[e_{id};e_{txt};e_{img}]
 
 <summary>公式</summary>
 
+$α_m$用  于控制模态 m上的模态交互强度
+
 ```math
 x_m^{inter}
 =
@@ -168,8 +170,6 @@ x_m^{inter}
 \left(W_{i,m}^{inter}e_{inter}+b_{i,m}^{inter}\right)
 \qquad \text{(8)}
 ```
-
-$α_m$用  于控制模态 m上的模态交互强度
 
 </details>
 
