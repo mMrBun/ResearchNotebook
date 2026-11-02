@@ -42,11 +42,18 @@ Lanling Xu, Zhen Tian, Bingqian Li, Junjie Zhang, Jinpeng Wang, Mingchen Cai, an
 
 根据用户过去交互过的商品、商品的ID/文本/图像，以及这些交互发生的时间，预测用户最有可能交互的下一件商品。
 
+<details>
+
+<summary>公式</summary>
+
 ```math
 v=\arg\max_{v\in\mathcal{V}}
 P(v_{|S|+1}=v\mid S)
 \qquad \text{(1)}
 ```
+</details>
+
+
 
 ### 2. 初始商品表示
 
@@ -58,7 +65,13 @@ P(v_{|S|+1}=v\mid S)
 M_{id}\in\mathbb{R}^{|V|\times d}.
 ```
 
+
+
 #### 2.2 文本特征
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 f_{txt}
@@ -69,7 +82,14 @@ f_{txt}
 \qquad \text{(2)}
 ```
 
+</details>
+
+
 #### 2.3 图像特征
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 f_{img}
@@ -80,7 +100,13 @@ f_{img}
 \qquad \text{(3)}
 ```
 
+</details>
+
+
 #### 2.4 特征纬度对齐
+<details>
+
+<summary>公式</summary>
 
 ```math
 x_{txt}=W_{txt}f_{txt}+b_{txt}
@@ -92,14 +118,24 @@ x_{img}=W_{img}f_{img}+b_{img}
 \qquad \text{(5)}
 ```
 
+</details>
+
+
 #### 2.5 加入历史交互的位置编码
 
 对于ID嵌入、文本嵌入，以及图像嵌入加入位置信息嵌入。
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 e_m=x_m+p
 \qquad \text{(6)}
 ```
+
+</details>
+
 
 ### 3. Interactive MoE：交互专家
 
@@ -107,12 +143,23 @@ e_m=x_m+p
 
 #### 3.1 拼接三个模态
 
+<details>
+
+<summary>公式</summary>
+
 ```math
 e_{inter}=[e_{id};e_{txt};e_{img}]
 \qquad \text{(7)}
 ```
 
+</details>
+
+
 #### 3.2 将多个专家的输出加权融合
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 x_m^{inter}
@@ -121,26 +168,48 @@ x_m^{inter}
 \left(W_{i,m}^{inter}e_{inter}+b_{i,m}^{inter}\right)
 \qquad \text{(8)}
 ```
+$α_m$用  于控制模态 m上的模态交互强度
+
+</details>
+
 
 #### 3.3 门控决定专家权重
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 g^m=\mathrm{Softmax}(W_{1,m}e_m+b_{1,m})
 \qquad \text{(9)}
 ```
 
+</details>
+
+
 #### 3.4 残差连接
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 e'_m=e_m+x_m^{inter}
 \qquad \text{(10)}
 ```
 
+</details>
+
+
 ### 4. Temporal MoE：显式时间专家
 
 使用 **Interval Time**（相邻行为间隔）和 **Absolute Time**（绝对时间戳）进一步调整商品表示。
 
 #### 4.1 计算相邻交互时间间隔
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 \{a_1,a_2,\ldots,a_{|S|}\}
@@ -149,16 +218,30 @@ e'_m=e_m+x_m^{inter}
 \qquad \text{(11)}
 ```
 
+</details>
+
+
 #### 4.2 计 算间隔的对应位置
 
 为时间间隔维护一个嵌入矩阵$M_t$，根据$pos_i$ 查询相应行得到$r_1,_i$ （第i次交互的时间间隔特征向量）
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 pos_i=\left\lfloor\mu\log(a_i+1)\right\rfloor
 \qquad \text{(12)}
 ```
 
+</details>
+
+
 #### 4.3 绝对时间编码
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 r_{2,i}^{i}
@@ -167,21 +250,42 @@ r_{2,i}^{i}
 \qquad \text{(13)}
 ```
 
+</details>
+
+
 #### 4.4 时间门控分配专家权重
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 g'=\mathrm{Softmax}\left(W_2[r_{1,i};r_{2,i}]+b_2\right)
 \qquad \text{(14)}
 ```
 
+</details>
+
+
 #### 4.5 拼接 Interactive MoE 输出
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 e_{temp}=[e'_{id};e'_{txt};e'_{img}]
 \qquad \text{(15)}
 ```
 
+</details>
+
+
 #### 4.6 时间专家逐维调整商品特征
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 [x_{id}^{temp};x_{txt}^{temp};x_{img}^{temp}]
@@ -192,11 +296,18 @@ e_{temp}=[e'_{id};e'_{txt};e'_{img}]
 \qquad \text{(16)}
 ```
 
+</details>
+
+
 ### 5. Transformer 序列建模与预测
 
 为了学习用户兴趣演变，使用transformer编码行为序列中的信息。
 
 #### 5.1 组织三个模态序列
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 S'_m=\mathrm{Dropout}(\mathrm{LayerNorm}(S_m))
@@ -208,7 +319,14 @@ H^m=\mathrm{Transformer}_m(S'_m)
 \qquad \text{(18)}
 ```
 
+</details>
+
+
 #### 5.2 候选商品匹配分数
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 \hat{y}_v
@@ -219,9 +337,18 @@ H^{id}\cdot x_{id}
 \qquad \text{(19)}
 ```
 
+</details>
+
+
 ### 6. 多任务学习
 
+用户历史交互可能非常稀疏，依靠预测下一件商品，模型获得的监督信号比较有限。
+
 #### 6.1 主推荐交叉熵损失
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 L_{main}
@@ -230,9 +357,16 @@ L_{main}
 \qquad \text{(20)}
 ```
 
-#### 6.2 CP：类别预测
+</details>
 
-知道一件商品是否属于护肤品、防晒用品等类别，可以给多模态商品表示增加监督信号。
+
+#### 6.2 CP（Category Prediction）：类别预测
+
+对于护肤品来说，模型可以学习到子类别，比如修复乳、防晒品、保湿品等等商品的语义监督。
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 \hat{y}^{CP}
@@ -240,6 +374,7 @@ L_{main}
 W_{CP}[x_{id};x_{txt};x_{img}]+b_{CP}
 \qquad \text{(21)}
 ```
+输入是商品的3d纬初始多模态表示，输出是C个类别的预测值。
 
 ```math
 L_{CP}(v)
@@ -251,10 +386,18 @@ y_c^{CP}\log(\hat{y}_c^{CP})
 \right]
 \qquad \text{(22)}
 ```
+利用二元交叉熵损失来促进多标签类别信息。
 
-#### 6.3 IDCL：ID 对比学习
+</details>
+
+
+#### 6.3 IDCL（Contrastive Learning on ID）：ID 对比学习
 
 用户的历史兴趣表示应该和他真正购买的下一件商品更接近，而与其他不匹配的商品更远。
+
+<details>
+
+<summary>公式</summary>
 
 ```math
 L_{IDCL}
@@ -269,8 +412,34 @@ L_{IDCL}
 \qquad \text{(23)}
 ```
 
-#### 6.4 PCL：时间占位符对比学习
 
+| 样本 | 用户历史兴趣 | 真实下一件商品 |
+| :--- | :---: | ---: |
+| A | 护肤品 | 防晒霜 |
+| B | 厨具 | 电饭煲 |
+| C | 游戏设备 | 键盘 |
+
+</details>
+
+
+
+
+#### 6.4 PCL（Placeholder Contrastive Learning）：时间占位符对比学习
+
+作者希望模型能够使用时间特征，并学会时间信息与用户兴趣之间的关联。
+
+随机隐藏历史序列中一部分商品内容，并用对应的时间向量取代它们，然后要求模型仍然能够学出与原序列相近的兴趣表示。
+| 位置1 | 位置2 | 位置3 |
+| :--- | :---: | ---: |
+| 洁面乳 | 面霜 | 防晒霜 |
+| 洁面乳 | [TP] | 防晒霜 |
+
+
+<details>
+
+<summary>公式</summary>
+
+生成时间占位符：
 ```math
 x_{m,i}^{temp}
 \leftarrow
@@ -278,6 +447,7 @@ W_{P,m}[r_{1,i};r_{2,i}]+b_{P,m}
 \qquad \text{(24)}
 ```
 
+对比对象：原始序列经过Transformer后的兴趣表示与带有时间占位符的序列经过Transformer后的兴趣表示。
 ```math
 L_{PCL}^{m}
 =
@@ -291,6 +461,7 @@ L_{PCL}^{m}
 \qquad \text{(25)}
 ```
 
+作者把这一任务集中用于加强显式时间信息与文本、图像表示之间的联系。
 ```math
 L_{PCL}
 =
@@ -298,7 +469,10 @@ L_{PCL}
 \qquad \text{(26)}
 ```
 
-作者把这一任务集中用于加强显式时间信息与文本、图像表示之间的联系。
+</details>
+
+
+
 
 ### 7. 联合训练与推理
 
@@ -311,6 +485,8 @@ L_{main}
 +\lambda_3L_{PCL}
 \qquad \text{(27)}
 ```
+
+
 
 实现设置：batch size 为 1024，隐藏维度 64，最大历史序列长度 50，Transformer 注意力头数及层数均为 2；$`k_1,k_2\in\{2,4,6,8,12\}`$ 进行搜索；$`\mu=100`$，$`freq=10000`$。
 
