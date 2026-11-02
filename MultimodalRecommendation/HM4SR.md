@@ -61,7 +61,7 @@ P(v_{|S|+1}=v\mid S)
 
 初始化一个商品 ID 嵌入矩阵：
 
-```
+```math
 M_{id}\in\mathbb{R}^{|V|\times d}.
 ```
 
