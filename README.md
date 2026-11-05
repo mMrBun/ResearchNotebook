@@ -14,6 +14,10 @@
 5. Lian, Yahong, Haotian Tian, Chunyao Song和Tingjian Ge. Sign-Aware Multimodal Graph Recommendation. 2026年3月14日. *Proceedings of the AAAI Conference on Artificial Intelligence*
  [https://doi.org/10.1609/aaai.v40i18.38547](https://doi.org/10.1609/aaai.v40i18.38547)
 
+ 6. Zhan, Xiaohan, Yuliang Shi, Jihu Wang, Shijun Liu, Fanyu Kong和Zhiyong Chen. DHMRec: Collaboration-Guided Multimodal Disentanglement and Hierarchical Fusion for Recommendation. 2026-03-14 *Proceedings of the AAAI Conference on Artificial Intelligence*
+ [ https://doi.org/10.1609/aaai.v40i19.38661]( https://doi.org/10.1609/aaai.v40i19.38661)
+
+
 
 
 
