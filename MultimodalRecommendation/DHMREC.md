@@ -45,32 +45,18 @@ $$
 采用JSD损失对齐图片共有表示 $C_{i,v}$ 和文字共有表示 $C_{i,t}$ 让他们彼此一致。
 
 $$
-\mathcal L_{\mathrm{JSD}}
-=
-\frac12
-\left[
-KL(P\|M)+KL(Q\|M)
-\right]
+\mathcal L_{\mathrm{JSD}}=\frac12\left[KL(P\|M)+KL(Q\|M)\right]
 $$
 
 
 $$
-P=\sigma(C_{i,t}),\qquad
-Q=\sigma(C_{i,v}),\qquad
-M=\frac{P+Q}{2}
+P=\sigma(C_{i,t}),\qquadQ=\sigma(C_{i,v}),\qquadM=\frac{P+Q}{2}
 $$
 
 对齐之后把图片共有表示和文字共有表示合起来。
 
 $$
-C_i
-=
-\sigma^{-1}
-\left(
-\frac{
-\sigma(C_{i,t})+\sigma(C_{i,v})
-}{2}
-\right)
+C_i=\sigma^{-1}\left(\frac{\sigma(C_{i,t})+\sigma(C_{i,v})}{2}\right)
 $$
 
 ### 解耦约束
@@ -78,13 +64,7 @@ $$
 让共有表示与私有表示保持垂直，减少重复的表示，增加差异化。
 
 $$
-\mathcal L_{\mathrm{orth}_m}
-=
-\frac{
-|\langle C_{i,m},S_{i,m}\rangle|
-}{
-\|C_{i,m}\|_2\|S_{i,m}\|_2
-}
+\mathcal L_{\mathrm{orth}_m}=\frac{|\langle C_{i,m},S_{i,m}\rangle|}{\|C_{i,m}\|_2\|S_{i,m}\|_2}
 $$
 
 该模块最终得到三个表示：
@@ -98,80 +78,48 @@ $S_{i,t}$:文字特有表示。
 创建四个用户-物品交互图，将ID表示、文字特有表示、图片特有表示、公共表示分别在四张图上进行LightGCN传播。
 
 $$
-E_{\hat m}^{(\ell)}
-=
-\left(D^{-\frac12}AD^{-\frac12}\right)
-E_{\hat m}^{(\ell-1)}
+E_{\hat m}^{(\ell)}=\left(D^{-\frac12}AD^{-\frac12}\right)E_{\hat m}^{(\ell-1)}
 $$
 
 $$
-E_{\hat m}
-=
-\frac{1}{L+1}
-\sum_{\ell=0}^{L}E_{\hat m}^{(\ell)}
+E_{\hat m}=\frac{1}{L+1}\sum_{\ell=0}^{L}E_{\hat m}^{(\ell)}
 $$
 
 ### 物品-物品图
 使用KNN算法构建三张物品-物品图，利用内容相似的商品补充信息，增强物品表示。
 
 $$
-I_{i,i'}^m
-=
-\frac{
-(x_i^m)^\top x_{i'}^m
-}{
-\|x_i^m\|\|x_{i'}^m\|
-},
-\qquad m\in\{t,v\}
+I_{i,i'}^m=\frac{(x_i^m)^\top x_{i'}^m}{\|x_i^m\|\|x_{i'}^m\|},\qquad m\in\{t,v\}
 $$
 
 
 使用top-k保留最相关的k个邻居。
 $$
-\hat I_{i,i'}^m=
-\begin{cases}
-1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\
-0,&\text{其他情况}
-\end{cases}
+\hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\0,&\text{其他情况}\end{cases}
 $$
 
 归一化
 
 $$
-\tilde I^m
-=
-D^{-\frac12}\hat I^mD^{-\frac12}
+\tilde I^m=D^{-\frac12}\hat I^mD^{-\frac12}
 $$
 
 组合图片图和文字图得到共有图。
 
 $$
-\tilde I^c
-=
-\beta_v\tilde I^v+\beta_t\tilde I^t
+\tilde I^c=\beta_v\tilde I^v+\beta_t\tilde I^t
 $$
 
 三张图准备好之后，分别传播三路表示
 
 $$
-\hat E_{i,\tilde m}^{(\ell)}
-=
-\tilde I^{\tilde m}
-\hat E_{i,\tilde m}^{(\ell-1)},
-\qquad \tilde m\in\{t,v,c\}
+\hat E_{i,\tilde m}^{(\ell)}=\tilde I^{\tilde m}\hat E_{i,\tilde m}^{(\ell-1)},\qquad \tilde m\in\{t,v,c\}
 $$
 
 更新用户表示
 
 $$
-\hat e_{u,\tilde m}
-=
-\sum_{i\in\mathcal N(u)}
-\frac{1}{
-\sqrt{|\mathcal N(u)|}
-\sqrt{|\mathcal N(i)|}
-}
-\hat e_{i,\tilde m}
+\hat e_{u,\tilde m}=\sum_{i\in\mathcal N(u)}\frac{1}{\sqrt{|\mathcal N(u)|}\sqrt{|\mathcal N(i)|}}\hat e_{i,\tilde m}
 $$
 
 该模块最终得到四个用户-商品向量矩阵：
@@ -188,8 +136,7 @@ $$
 先将三路表示拼接
 
 $$
-\hat E=
-[\hat E_c;\hat E_t;\hat E_v]
+\hat E=[\hat E_c;\hat E_t;\hat E_v]
 $$
 
 经过线性变换压回d维
@@ -205,63 +152,37 @@ Q_v=W_q^v\hat E_{\mathrm{fus}}
 $$
 
 $$
-K_v=W_k^v\hat E_v,\qquad
-V_v=W_v^v\hat E_v
+K_v=W_k^v\hat E_v,\qquad V_v=W_v^v\hat E_v
 $$
 
 计算正分支
 
 $$
-O_{\tilde m}^{\mathrm{pos}}
-=
-\operatorname{Softmax}
-\left(
-\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}
-\right)V_{\tilde m}
+O_{\tilde m}^{\mathrm{pos}}=\operatorname{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde m}
 $$
 
 计算负分支
 
 $$
-O_{\tilde m}^{\mathrm{neg}}
-=（
-1-
-\operatorname{Softmax}
-\left(
-\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}
-\right)V_{\tilde m}）
+O_{\tilde m}^{\mathrm{neg}}=（1-\operatorname{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde }）
 $$
 
 合并正负分支
 
 $$
-O_{\tilde m}
-=
-\alpha_{\mathrm{pos}}O_{\tilde m}^{\mathrm{pos}}
-+
-\alpha_{\mathrm{neg}}O_{\tilde m}^{\mathrm{neg}}
+O_{\tilde m}=\alpha_{\mathrm{pos}}O_{\tilde m}^{\mathrm{pos}}+\alpha_{\mathrm{neg}}O_{\tilde m}^{\mathrm{neg}}
 $$
 
 做线性变换、层归一化，并加回原来的表示
 
 $$
-\tilde E_{\tilde m}
-=
-\operatorname{LN}
-\left(
-\operatorname{LN}
-\left(W_o^{\tilde m}O_{\tilde m}\right)
-+
-\hat E_{\tilde m}
-\right)
+\tilde E_{\tilde m}=\operatorname{LN}\left(\operatorname{LN}\left(W_o^{\tilde m}O_{\tilde m}\right)+\hat E_{\tilde m}\right)
 $$
 
 把三路处理结果相加
 
 $$
-\tilde E_{\mathrm{mm}}
-=
-\tilde E_c+\tilde E_v+\tilde E_t
+\tilde E_{\mathrm{mm}}=\tilde E_c+\tilde E_v+\tilde E_t
 $$
 
 融合ID表示
@@ -269,31 +190,19 @@ $$
 多模态表示计算推荐分数
 
 $$
-P_{\mathrm{mm}}
-=
-\operatorname{Softmax}
-\left(
-\tilde E_{u,\mathrm{mm}}^\top
-\tilde E_{i,\mathrm{mm}}
-\right)
+P_{\mathrm{mm}}=\operatorname{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)
 $$
 
 使用KL散度对齐两个分布，$P_{id}$ 由 $E_{id}$ 推导而来
 
 $$
-\mathcal L_{\mathrm{KL}}
-=
-KL(P_{\mathrm{mm}}\|P_{\mathrm{id}})
+\mathcal L_{\mathrm{KL}}=KL(P_{\mathrm{mm}}\|P_{\mathrm{id}})
 $$
 
 最终的用户和物品嵌入由多模态融合嵌入和ID嵌入加权得到
 
 $$
-\dot E
-=
-E_{\mathrm{id}}
-+
-\alpha_{\mathrm{mm}}\tilde E_{\mathrm{mm}}
+\dot E=E_{\mathrm{id}}+\alpha_{\mathrm{mm}}\tilde E_{\mathrm{mm}}
 $$
 
 
@@ -307,10 +216,7 @@ $$
 采用贝叶斯个性化排序(BPR)作为推荐优化损失。
 
 $$
-\mathcal L_{\mathrm{BPR}}
-=
-\sum_{(u,i,j)\in D_{\mathrm{train}}}
--\ln\sigma(\hat y_{ui}-\hat y_{uj})
+\mathcal L_{\mathrm{BPR}}=\sum_{(u,i,j)\in D_{\mathrm{train}}}-\ln\sigma(\hat y_{ui}-\hat y_{uj})
 $$
 
 总体目标整合了BPR损失、解耦损失、KL对齐损失和 L2 正 则化。
