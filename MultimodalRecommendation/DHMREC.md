@@ -50,7 +50,7 @@ $$
 
 
 $$
-P=\sigma(C_{i,t}),\qquadQ=\sigma(C_{i,v}),\qquadM=\frac{P+Q}{2}
+P=\sigma(C_{i,t}),\qquad Q=\sigma(C_{i,v}),\qquad M=\frac{P+Q}{2}
 $$
 
 对齐之后把图片共有表示和文字共有表示合起来。
@@ -158,13 +158,13 @@ $$
 计算正分支
 
 $$
-O_{\tilde m}^{\mathrm{pos}}=\operatorname{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde m}
+O_{\tilde m}^{\mathrm{pos}}=\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde m}
 $$
 
 计算负分支
 
 $$
-O_{\tilde m}^{\mathrm{neg}}=（1-\operatorname{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde }）
+O_{\tilde m}^{\mathrm{neg}}=（1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde }）
 $$
 
 合并正负分支
@@ -176,7 +176,7 @@ $$
 做线性变换、层归一化，并加回原来的表示
 
 $$
-\tilde E_{\tilde m}=\operatorname{LN}\left(\operatorname{LN}\left(W_o^{\tilde m}O_{\tilde m}\right)+\hat E_{\tilde m}\right)
+\tilde E_{\tilde m}=\mathrm{LN}\left(\mathrm{LN}\left(W_o^{\tilde m}O_{\tilde m}\right)+\hat E_{\tilde m}\right)
 $$
 
 把三路处理结果相加
@@ -190,7 +190,7 @@ $$
 多模态表示计算推荐分数
 
 $$
-P_{\mathrm{mm}}=\operatorname{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)
+P_{\mathrm{mm}}=\mathrm{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)
 $$
 
 使用KL散度对齐两个分布，$P_{id}$ 由 $E_{id}$ 推导而来
