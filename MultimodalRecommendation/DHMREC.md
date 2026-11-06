@@ -163,8 +163,12 @@ $$
 
 计算负分支
 
-$$
+<!-- $$
 O_{\tilde m}^{\mathrm{neg}}=（1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde }）
+$$ -->
+
+$$
+O_{\tilde m}^{\mathrm{neg}}=\left(1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt{N}}\right)\right)V_{\tilde m}
 $$
 
 合并正负分支
