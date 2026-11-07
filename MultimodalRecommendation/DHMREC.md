@@ -33,7 +33,7 @@ $$
 |  图像 |  $C_{i,v}$  | $P_{i,v}$   |
 | 文字  |  $C_{i,t}$  | $P_{i,t}$   |
 
-### 协作信号引导去燥
+### 协作信号引导去噪
 由于噪声往往出现在私有特征中，于是将私有私有表示 $P_{i,m}$输入到门控网络，用包含丰富协作信息的ID嵌入去调节推荐任务相关的模态特定特征表示。
 
 $$
@@ -45,7 +45,7 @@ $$
 采用JSD损失对齐图片共有表示 $C_{i,v}$ 和文字共有表示 $C_{i,t}$ 让他们彼此一致。
 
 $$
-\mathcal L_{\mathrm{JSD}}=\frac12\left[KL(P\|M)+KL(Q\|M)\right]
+\mathcal L_{\mathrm{JSD}}=\frac12\left[KL(P\|M)+KL(Q\|M)\right]\qquad \text{(4)}
 $$
 
 
@@ -53,18 +53,18 @@ $$
 P=\sigma(C_{i,t}),\qquad Q=\sigma(C_{i,v}),\qquad M=\frac{P+Q}{2}
 $$
 
-对齐之后把图片共有表示和文字共有表示合起来。
+把图片共有表示和文字共有表示合起来。
 
 $$
-C_i=\sigma^{-1}\left(\frac{\sigma(C_{i,t})+\sigma(C_{i,v})}{2}\right)
+C_i=\sigma^{-1}\left(\frac{\sigma(C_{i,t})+\sigma(C_{i,v})}{2}\right)\qquad \text{(5)}
 $$
 
 ### 解耦约束
 
-让共有表示与私有表示保持垂直，减少重复的表示，增加差异化。
+使用正交损失让共有表示与私有表示保持正交，减少重复的表示，增加差异化。
 
 $$
-\mathcal L_{\mathrm{orth}_m}=\frac{|\langle C_{i,m},S_{i,m}\rangle|}{\|C_{i,m}\|_2\|S_{i,m}\|_2}
+\mathcal L_{\mathrm{orth}_m}=\frac{|\langle C_{i,m},S_{i,m}\rangle|}{\|C_{i,m}\|_2\|S_{i,m}\|_2}\qquad \text{(6)}
 $$
 
 该模块最终得到三个表示：
@@ -75,51 +75,51 @@ $S_{i,t}$:文字特有表示。
 ## 多视图图学习模块
 
 ### 用户-物品图
-创建四个用户-物品交互图，将ID表示、文字特有表示、图片特有表示、公共表示分别在四张图上进行LightGCN传播。
+创建四张用户-物品交互图，将ID表示、文字特有表示、图片特有表示、公共表示分别在四张图上进行LightGCN传播。
 
 $$
-E_{\hat m}^{(\ell)}=\left(D^{-\frac12}AD^{-\frac12}\right)E_{\hat m}^{(\ell-1)}
+E_{\hat m}^{(\ell)}=\left(D^{-\frac12}AD^{-\frac12}\right)E_{\hat m}^{(\ell-1)}\qquad \text{(7)}
 $$
 
 $$
-E_{\hat m}=\frac{1}{L+1}\sum_{\ell=0}^{L}E_{\hat m}^{(\ell)}
+E_{\hat m}=\frac{1}{L+1}\sum_{\ell=0}^{L}E_{\hat m}^{(\ell)}\qquad \text{(8)}
 $$
 
 ### 物品-物品图
 使用KNN算法构建三张物品-物品图，利用内容相似的商品补充信息，增强物品表示。
 
 $$
-I_{i,i'}^m=\frac{(x_i^m)^\top x_{i'}^m}{\|x_i^m\|\|x_{i'}^m\|},\qquad m\in\{t,v\}
+I_{i,i'}^m=\frac{(x_i^m)^\top x_{i'}^m}{\|x_i^m\|\|x_{i'}^m\|},\qquad m\in\{t,v\}\qquad \text{(9)}
 $$
 
 
 使用top-k保留最相关的k个邻居。
 $$
-\hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\0,&\text{其他情况}\end{cases}
+\hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\0,&\text{其他情况}\end{cases}\qquad \text{(10)}
 $$
 
 归一化
 
 $$
-\tilde I^m=D^{-\frac12}\hat I^mD^{-\frac12}
+\tilde I^m=D^{-\frac12}\hat I^mD^{-\frac12}\qquad \text{(11)}
 $$
 
 组合图片图和文字图得到共有图。
 
 $$
-\tilde I^c=\beta_v\tilde I^v+\beta_t\tilde I^t
+\tilde I^c=\beta_v\tilde I^v+\beta_t\tilde I^t\qquad \text{(12)}
 $$
 
 三张图准备好之后，分别传播三路表示
 
 $$
-\hat E_{i,\tilde m}^{(\ell)}=\tilde I^{\tilde m}\hat E_{i,\tilde m}^{(\ell-1)},\qquad \tilde m\in\{t,v,c\}
+\hat E_{i,\tilde m}^{(\ell)}=\tilde I^{\tilde m}\hat E_{i,\tilde m}^{(\ell-1)},\qquad \tilde m\in\{t,v,c\}\qquad \text{(13)}
 $$
 
-更新用户表示
+用更新后的物品向量重新计算用户表示。
 
 $$
-\hat e_{u,\tilde m}=\sum_{i\in\mathcal N(u)}\frac{1}{\sqrt{|\mathcal N(u)|}\sqrt{|\mathcal N(i)|}}\hat e_{i,\tilde m}
+\hat e_{u,\tilde m}=\sum_{i\in\mathcal N(u)}\frac{1}{\sqrt{|\mathcal N(u)|}\sqrt{|\mathcal N(i)|}}\hat e_{i,\tilde m}\qquad \text{(14)}
 $$
 
 该模块最终得到四个用户-商品向量矩阵：
@@ -158,60 +158,56 @@ $$
 计算正分支
 
 $$
-O_{\tilde m}^{\mathrm{pos}}=\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde m}
+O_{\tilde m}^{\mathrm{pos}}=\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde m}\qquad \text{(15)}
 $$
 
 计算负分支
 
-<!-- $$
-O_{\tilde m}^{\mathrm{neg}}=（1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt N}\right)V_{\tilde }）
-$$ -->
-
 $$
-O_{\tilde m}^{\mathrm{neg}}=\left(1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt{N}}\right)\right)V_{\tilde m}
+O_{\tilde m}^{\mathrm{neg}}=\left(1-\mathrm{Softmax}\left(\frac{Q_{\tilde m}K_{\tilde m}^{\top}}{\sqrt{N}}\right)\right)V_{\tilde m}\qquad \text{(16)}
 $$
 
 合并正负分支
 
 $$
-O_{\tilde m}=\alpha_{\mathrm{pos}}O_{\tilde m}^{\mathrm{pos}}+\alpha_{\mathrm{neg}}O_{\tilde m}^{\mathrm{neg}}
+O_{\tilde m}=\alpha_{\mathrm{pos}}O_{\tilde m}^{\mathrm{pos}}+\alpha_{\mathrm{neg}}O_{\tilde m}^{\mathrm{neg}}\qquad \text{(17)}
 $$
 
 做线性变换、层归一化，并加回原来的表示
 
 $$
-\tilde E_{\tilde m}=\mathrm{LN}\left(\mathrm{LN}\left(W_o^{\tilde m}O_{\tilde m}\right)+\hat E_{\tilde m}\right)
+\tilde E_{\tilde m}=\mathrm{LN}\left(\mathrm{LN}\left(W_o^{\tilde m}O_{\tilde m}\right)+\hat E_{\tilde m}\right)\qquad \text{(18)}
 $$
 
 把三路处理结果相加
 
 $$
-\tilde E_{\mathrm{mm}}=\tilde E_c+\tilde E_v+\tilde E_t
+\tilde E_{\mathrm{mm}}=\tilde E_c+\tilde E_v+\tilde E_t\qquad \text{(19)}
 $$
 
-融合ID表示
+### 融合ID表示
 
-多模态表示计算推荐分数
+为了确保多模态融合与协同信号之间的一致性，通过计算用户和物品嵌入的内积来获得交互分布,从而对齐多模态和ID嵌入的偏好分布
 
 $$
-P_{\mathrm{mm}}=\mathrm{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)
+P_{\mathrm{mm}}=\mathrm{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)\qquad \text{(20)}
 $$
 
 使用KL散度对齐两个分布，$P_{id}$ 由 $E_{id}$ 推导而来
 
 $$
-\mathcal L_{\mathrm{KL}}=KL(P_{\mathrm{mm}}\|P_{\mathrm{id}})
+\mathcal L_{\mathrm{KL}}=KL(P_{\mathrm{mm}}\|P_{\mathrm{id}})\qquad \text{(21)}
 $$
 
 最终的用户和物品嵌入由多模态融合嵌入和ID嵌入加权得到
 
 $$
-\dot E=E_{\mathrm{id}}+\alpha_{\mathrm{mm}}\tilde E_{\mathrm{mm}}
+\dot E=E_{\mathrm{id}}+\alpha_{\mathrm{mm}}\tilde E_{\mathrm{mm}}\qquad \text{(22)}
 $$
 
 
 ## 预测& 优化
-通过计算用户和物品最终嵌入的内积来获得用户的预测 分数
+通过计算用户和物品最终嵌入的内积来获得用户的预测分数。
 
 $$
 \hat y_{ui}=(\dot e_u)^\top\dot e_i
@@ -239,3 +235,12 @@ $$
 &+\gamma_{\mathrm{reg}}\|\theta\|_2^2
 \end{aligned}
 $$
+
+## 结果
+在三个亚马逊数据集Baby、Sports 和 Clothing上与最佳基线相比, DHMRec在三个数据集的R@20上分别取得了2.63%、 1.09%和2.44%的性能提升。
+## 存在的不足
+去掉解耦模块后baby数据集的NDCG@20反而上升了，
+BPR损失希望相关商品尽量排在前面，解耦模块希望共有表示彼此对齐，共有表示与特有表示尽量正交，是否发生了冲突？
+如果一个商品的某一属性能够帮助判断用户偏好，但它同时存在于共有表示和特有表示中，那么正交约束会尽量减少这种重合。
+
+
