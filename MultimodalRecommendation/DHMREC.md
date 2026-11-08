@@ -96,7 +96,7 @@ $$
 使用top-k保留最相关的k个邻居。
 
 $$
-\hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\0,&\text{其他情况}\end{cases}\qquad \text{(10)}
+\hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\ 0,&\text{其他情况}\end{cases}\qquad \text{(10)}
 $$
 
 归一化
