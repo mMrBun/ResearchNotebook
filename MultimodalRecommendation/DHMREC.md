@@ -94,6 +94,7 @@ $$
 
 
 使用top-k保留最相关的k个邻居。
+
 $$
 \hat I_{i,i'}^m=\begin{cases}1,&i'\text{ 属于 }i\text{ 最相似的 }k\text{ 个邻居}\\0,&\text{其他情况}\end{cases}\qquad \text{(10)}
 $$
@@ -123,6 +124,7 @@ $$
 $$
 
 该模块最终得到四个用户-商品向量矩阵：
+
 $$
 \hat E_c,\qquad \hat E_t,\qquad \hat E_v,\qquad\hat E_{id}
 $$
@@ -131,6 +133,7 @@ $$
 ## 多模态层次融合模块
 该模块主要做两件事情
 1、先融合共有、图片特有、文字特有三路内容信息。
+
 2、再把融合后的内容表示与 ID 表示结合起来。
 ### 解耦模态特征融合
 先将三路表示拼接
@@ -193,7 +196,7 @@ $$
 P_{\mathrm{mm}}=\mathrm{Softmax}\left(\tilde E_{u,\mathrm{mm}}^\top\tilde E_{i,\mathrm{mm}}\right)\qquad \text{(20)}
 $$
 
-使用KL散度对齐两个分布，$P_{id}$ 由 $E_{id}$ 推导而来
+使用KL散度对齐两个分布$P_{id}$由 $E_{id}$ 推导而来
 
 $$
 \mathcal L_{\mathrm{KL}}=KL(P_{\mathrm{mm}}\|P_{\mathrm{id}})\qquad \text{(21)}
@@ -275,11 +278,11 @@ $$
 通过 Sigmoid 得到：
 
 $$
-s_m=\operatorname{Sigmoid}(\alpha_m),
+s_m=\mathrm{Sigmoid}(\alpha_m),
 $$
 
 $$
-h_m=\operatorname{Sigmoid}(\beta_m).
+h_m=\mathrm{Sigmoid}(\beta_m).
 $$
 
 $s_v$	图像 $\rightarrow$ 文本 输入门
@@ -381,11 +384,11 @@ $$
 对AO、UP进行ID引导门控
 
 $$
-g_{A,i}^m=\operatorname{Sigmoid}\left(W_{g,A}^m e_{i,\mathrm{id}}+b_{g,A}^m\right),
+g_{A,i}^m=\mathrm{Sigmoid}\left(W_{g,A}^m e_{i,\mathrm{id}}+b_{g,A}^m\right),
 $$
 
 $$
-g_{U,i}^m=\operatorname{Sigmoid}\left(W_{g,U}^m e_{i,\mathrm{id}}+b_{g,U}^m\right).
+g_{U,i}^m=\mathrm{Sigmoid}\left(W_{g,U}^m e_{i,\mathrm{id}}+b_{g,U}^m\right).
 $$
 
 $$
