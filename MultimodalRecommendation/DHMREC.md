@@ -244,3 +244,174 @@ BPR损失希望相关商品尽量排在前面，解耦模块希望共有表示�
 如果一个商品的某一属性能够帮助判断用户偏好，但它同时存在于共有表示和特有表示中，那么正交约束会尽量减少这种重合。
 
 
+## 想法尝试
+第一个解耦模块可以替换成MPD的做法。将两个模态的私有表示分为MP、AO、UP，之后合并两个模态的MP当作共有表示，将两个模态的AO、UP合并为私有表示交给第二个模块。
+
+预提取的模态特征$X_m$，一列表示一个商品，一行表示一个纬度的特征。
+
+$$
+x_{i,m}=X_m[:,i]\in\mathbb R^{D_m},
+$$
+
+对特征进行逐维标准化
+
+$$
+z_{i,m,k}=\frac{x_{i,m,k}-\mu_{m,k}}{\sigma_{m,k}+\epsilon}.
+$$
+
+得到：
+
+$$
+z_{i,v}\in\mathbb R^{D_v},\qquad z_{i,t}\in\mathbb R^{D_t}.
+$$
+
+对每个模态设置两种门，输入门 $s_m$ 和输出门 $h_m$对应STG输入门与HCG输出门。
+每个模态都有两组可训练参数：
+
+$$
+\alpha_m,\beta_m\in\mathbb R^{D_m}.
+$$
+
+通过 Sigmoid 得到：
+
+$$
+s_m=\operatorname{Sigmoid}(\alpha_m),
+$$
+
+$$
+h_m=\operatorname{Sigmoid}(\beta_m).
+$$
+
+$s_v$	图像 $\rightarrow$ 文本 输入门
+$h_t$	图像 $\rightarrow$ 文本 输出门
+$s_t$	文本 $\rightarrow$ 图像 输入门
+$h_v$	文本 $\rightarrow$ 图像 输出门
+
+拿图像举例
+
+$$
+\widetilde z_{i,v}=s_v\odot z_{i,v}
+$$
+
+$$
+\boxed{\widehat z_{i,t}=f_{v\rightarrow t}(\widetilde z_{i,v})}
+$$
+
+反向进行同样的操作，预测网络可以使用MLP。
+
+双向预测误差
+$v\rightarrow t$
+
+$$
+\boxed{\mathcal L_{v\rightarrow t}=\frac1{D_t}\sum_j h_{t,j}e_{v\rightarrow t,j}+\lambda_s\frac1{D_v}\sum_k s_{v,k}-\lambda_h\frac1{D_t}\sum_j h_{t,j}}
+$$
+
+$t\rightarrow v$
+
+$$
+\boxed{\mathcal L_{t\rightarrow v}=\frac1{D_v}\sum_k h_{v,k}e_{t\rightarrow v,k}+\lambda_s\frac1{D_t}\sum_j s_{t,j}-\lambda_h\frac1{D_v}\sum_k h_{v,k}}
+$$
+
+总损失
+
+$$
+\boxed{\mathcal L_{\mathrm{dec}}=\mathcal L_{v\rightarrow t}+\mathcal L_{t\rightarrow v}}
+$$
+
+门控训练
+
+1、将输出门全部固定设为1，更新输入门和预测器。
+2、固定输入门与预测器，更新输出门。
+3、固定第二步更新后带有阈值的输出门，更新输入门与预测器。
+
+$$
+\bar s_m=\mathbf1[s_m>\tau_s],
+$$
+
+$$
+\bar h_m=\mathbf1[h_m>\tau_h].
+$$
+
+结合门控将每个模态划分MP、AO、UP。
+
+以图像为例
+
+$$
+\boxed{M_{i,v}=\bar h_v\odot z_{i,v}}
+$$
+
+$$
+\boxed{A_{i,v}=(1-\bar h_v)\odot\bar s_v\odot z_{i,v}}
+$$
+
+$$
+\boxed{U_{i,v}=(1-\bar h_v)\odot(1-\bar s_v)\odot z_{i,v}}
+$$
+
+$M_{i,v}$：自身被选为可预测目标的图像维度；
+$A_{i,v}$：自身未被选为可预测目标，但被选作预测输入的维度；
+$U_{i,v}$：两种选择都没有选中的维度。
+
+$$
+M_{i,v}+A_{i,v}+U_{i,v}=z_{i,v}.
+$$
+
+文本特征处理逻辑相同。
+
+调整合并特征得到共有表示、特有表示
+
+$$
+r_{i,m}^{M}=H_m^{M}M_{i,m},
+$$
+
+$$
+r_{i,m}^{A}=H_m^{A}A_{i,m},
+$$
+
+$$
+r_{i,m}^{U}=H_m^{U}U_{i,m}.
+$$
+
+合并MP得到 $c_i^{\mathrm{new}}$
+
+$$
+\boxed{c_i^{\mathrm{new}}=W_M[r_{i,v}^{M};r_{i,t}^{M}]+b_M}
+$$
+
+对AO、UP进行ID引导门控
+
+$$
+g_{A,i}^m=\operatorname{Sigmoid}\left(W_{g,A}^m e_{i,\mathrm{id}}+b_{g,A}^m\right),
+$$
+
+$$
+g_{U,i}^m=\operatorname{Sigmoid}\left(W_{g,U}^m e_{i,\mathrm{id}}+b_{g,U}^m\right).
+$$
+
+$$
+\widetilde r_{i,m}^{A}=r_{i,m}^{A}\odot g_{A,i}^m,
+$$
+
+$$
+\widetilde r_{i,m}^{U}=r_{i,m}^{U}\odot g_{U,i}^m.
+$$
+
+将 AO、UP 融合为每个模态的输出表示
+
+图像：
+
+$$
+\boxed{s_{i,v}^{\mathrm{new}}=W_F^v[\widetilde r_{i,v}^{A};\widetilde r_{i,v}^{U}]+b_F^v}
+$$
+
+文本：
+
+$$
+\boxed{s_{i,t}^{\mathrm{new}}=W_F^t[\widetilde r_{i,t}^{A};\widetilde r_{i,t}^{U}]+b_F^t}
+$$
+
+最终得到：
+
+$$
+\boxed{c_i^{\mathrm{new}}\in\mathbb R^d,\quad s_{i,v}^{\mathrm{new}}\in\mathbb R^d,\quad s_{i,t}^{\mathrm{new}}\in\mathbb R^d}
+$$
