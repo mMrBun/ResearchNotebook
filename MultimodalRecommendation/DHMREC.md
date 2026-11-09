@@ -1,6 +1,6 @@
 # DHMRec: Collaboration-Guided Multimodal Disentanglement and Hierarchical Fusion for Recommendation
 
-- 发表在：*Proceedings of the AAAI Conference on Artificial Intelligence* [论文链接](https://doi.org/10.1609/aaai.v40i19.38661) [项目代码：只包含pdf，目前没有代码](https://github.com/cheer-io/DHMRec)
+- 发表在：*Proceedings of the AAAI Conference on Artificial Intelligence* 2026-03-14 [论文链接](https://doi.org/10.1609/aaai.v40i19.38661) [项目代码：只包含pdf，目前没有代码](https://github.com/cheer-io/DHMRec)
 
 - 作者 Xiaohan Zhan, Yuliang Shi, Jihu Wang, Shijun Liu, Fanyu Kong和Zhiyong Chen. **山东大学软件学院**、**山大地纬软件  股份有限公司**和**香山东大学控制科学与工程学院**
 
@@ -255,7 +255,7 @@ BPR损失希望相关商品尽量排在前面，解耦模块希望共有表示�
 ## 想法尝试
 第一个解耦模块可以替换成MPD的做法。将两个模态的私有表示分为MP、AO、UP，之后合并两个模态的MP当作共有表示，将两个模态的AO、UP合并为私有表示交给第二个模块。
 
-预提取的模态特征$X_m$，一列表示一个商品，一行表示一个纬度的特征。
+预提取的模态特征 $X_m$。
 
 $$
 x_{i,m}=X_m[:,i]\in\mathbb R^{D_m},
