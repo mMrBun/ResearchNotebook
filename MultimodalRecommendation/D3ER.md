@@ -1,6 +1,6 @@
 # D3ER: Supporting Multi-Modal Recommendation via Disentangle  and Distillation-based Dynamic Ensemble
 
-- 发表在：*Proceedings of the 34th ACM  International Conference on Multimedia (MM ’26),*  [论文链接](https://arxiv.org/pdf/2608.25737) [项目代码]()
+- 发表在：*Proceedings of the 34th ACM  International Conference on Multimedia (MM ’26),*  [论文链接](https://arxiv.org/pdf/2608.25737)
 
 - 作者 Bingnan Wang, Yi Li, Xiongxin Tang, Fanjiang Xu, 和 Jiangmeng Li. **中国科学院软件研究所**
 
@@ -170,4 +170,3 @@ $$
 $$
 \mathcal{L}_d=\mathcal{L}_{\mathrm{gc}}+\mathcal{L}_{\mathrm{distill}}.\qquad (15)
 $$
-
