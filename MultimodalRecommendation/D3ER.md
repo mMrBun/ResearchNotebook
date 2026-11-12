@@ -97,19 +97,13 @@ $$
 给每一路建立一个推荐模型，合起来称为累计模型：
 
 $$
-\mathcal G_\Theta=\left\{g_{\vartheta^c},g_{\vartheta_v^s},g_{\vartheta_t^s}\right\}
+\mathcal G_\Theta=\{g_{\vartheta^c},g_{\vartheta_v^s},g_{\vartheta_t^s}\}
 $$
 
 三个分支的分数相加
 
 $$
-S(u,i)
-=
-\mathcal G_\Theta(x,u,i)
-=
-\sum_{g_\vartheta\in\mathcal G_\Theta}
-g_\vartheta(x,u,i)
-\qquad \text(9)
+S(u,i)=\mathcal G_\Theta(x,u,i)=\sum_{g_\vartheta\in\mathcal G_\Theta}g_\vartheta(x,u,i)\qquad \text(9)
 $$
 
 BPR损失
@@ -122,7 +116,7 @@ $$
 让选中分支拟合 BPR 的负梯度。
 
 $$
-\begin{aligned}\mathcal L'_{\mathrm{boost}}&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(-\frac{\partial\mathcal L_{\mathrm{BPR}}\left(\operatorname{sg}(\Delta S_{k-1})\right)}{\partial\Delta S_{k-1}}\right)\right)^2\\&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(1-\sigma\left(\operatorname{sg}(\Delta S_{k-1})\right)\right)\right)^2.\end{aligned}\qquad \text(11)
+\begin{aligned}\mathcal L'_{\mathrm{boost}}&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(-\frac{\partial\mathcal L_{\mathrm{BPR}}\left(\mathrm{sg}(\Delta S_{k-1})\right)}{\partial\Delta S_{k-1}}\right)\right)^2\\&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(1-\sigma\left(\mathrm{sg}(\Delta S_{k-1})\right)\right)\right)^2.\end{aligned}\qquad \text(11)
 $$
 
 $S_1$ 使用普通BPR，后续应用式11。
@@ -137,7 +131,7 @@ $$
 
 $$
 \mathcal L_{\mathrm{distill}}=\sum_{(u,i,j)\in\mathcal O}
-\left(\Delta S_k-\operatorname{sg}\left(\Delta S_{k-1}+\Delta S_k^*\right)\right)^2.\qquad \text(13)
+\left(\Delta S_k-\mathrm{sg}\left(\Delta S_{k-1}+\Delta S_k^*\right)\right)^2.\qquad \text(13)
 $$
 
 老师的预测也可能不够好，加入全局校正。
