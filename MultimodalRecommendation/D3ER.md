@@ -23,10 +23,7 @@ FCD主要做三件事：
 对于预提取的模态特征$x_m$，使用MLP将其分为共有特征与私有特征。
 
 $$
-z_m^c=f_{\theta_m^c}(x_m),
-\qquad
-z_m^s=f_{\theta_m^s}(x_m)\qquad \text(1)
-
+z_m^c=f_{\theta_m^c}(x_m),\qquad z_m^s=f_{\theta_m^s}(x_m)\qquad \text(1)
 $$
 
 MLP有四个：$f_{\theta_v^c}$、$f_{\theta_v^s}$、$f_{\theta_t^c}$、$f_{\theta_t^s}$，对应得到：$z_v^c$、$z_v^s$、$z_t^c$、$z_t^s$。
@@ -53,29 +50,20 @@ $$
 分布级对齐损失
 
 $$
-\mathcal L_{wd}=\sum_{m_1,m_2\in\mathcal M}^{m_1\ne m_2}
-\mathcal W_p\left(\mathcal P(z_{m_1}^c),\mathcal P(z_{m_2}^c)\right).\qquad \text(5)
+\mathcal L_{wd}=\sum_{m_1,m_2\in\mathcal M}^{m_1\ne m_2}\mathcal W_p\left(\mathcal P(z_{m_1}^c),\mathcal P(z_{m_2}^c)\right).\qquad \text(5)
 $$
 
 Wasserstein距离：把概率分布 $P_1$ 的概率质量搬运成 $P_2$ 的分布，最少需要付出多少代价。
 
 $$
-
-W_p(\mathcal P_1,\mathcal P_2)=\left[
-\inf_{\mu\in\Gamma(x_1,x_2)}
-\int
-d(x_1,x_2)^p\,d\mu(x_1,x_2)
-\right]^{\frac{1}{p}}.
-\qquad \text(3)
-
+W_p(\mathcal P_1,\mathcal P_2)=\left[\inf_{\mu\in\Gamma(x_1,x_2)}\int d(x_1,x_2)^p\,d\mu(x_1,x_2)\right]^{\frac{1}{p}}.\qquad \text(3)
 $$
 
 由于计算成本过高，原文采用Radon变换的线性积分方法计算Wasserstein距离衡量图文分布的差异
 
 
 $$
-\mathcal W_p(\mathcal P_1,\mathcal P_2)=\left[\int_{\mathbb S^{d_\theta-1}}W_p\left(\mathcal R\mathcal P_1(\cdot,\theta),\mathcal R\mathcal P_2(\cdot,\theta)
-\right)\,d\theta\right]^{\frac{1}{p}}.\qquad \text(4)
+\mathcal W_p(\mathcal P_1,\mathcal P_2)=\left[\int_{\mathbb S^{d_\theta-1}}W_p\left(\mathcal R\mathcal P_1(\cdot,\theta),\mathcal R\mathcal P_2(\cdot,\theta)\right)\,d\theta\right]^{\frac{1}{p}}.\qquad \text(4)
 $$
 
 
@@ -127,13 +115,7 @@ $$
 BPR损失
 
 $$
-\mathcal L_{\mathrm{BPR}}
-=
--\sum_{(u,i,j)\in\mathcal O}
-\log\left(\sigma\left(\Delta S(u,i,j)\right)\right), \\
-
-\Delta S(u,i,j)=S(u,i)-S(u,j).\qquad \text(10)
-
+\mathcal L_{\mathrm{BPR}}=-\sum_{(u,i,j)\in\mathcal O}\log\left(\sigma\left(\Delta S(u,i,j)\right)\right), \\ \Delta S(u,i,j)=S(u,i)-S(u,j).\qquad \text(10)
 $$
 
 
