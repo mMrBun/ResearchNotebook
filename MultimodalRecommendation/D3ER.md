@@ -1,0 +1,173 @@
+# D3ER: Supporting Multi-Modal Recommendation via Disentangle  and Distillation-based Dynamic Ensemble
+
+- 发表在：*Proceedings of the 34th ACM  International Conference on Multimedia (MM ’26),*  [论文链接](https://arxiv.org/pdf/2608.25737) [项目代码]()
+
+- 作者 Bingnan Wang, Yi Li, Xiongxin Tang, Fanjiang Xu, 和 Jiangmeng Li. **中国科学院软件研究所**
+
+
+
+## 问题分析
+与DHMRec解决的问题类似但：
+特征解耦之后的模块进行朴素融合往往会削弱各自的独立有效性。
+
+
+## 方法
+
+### FCD（feature component disentanglement）模块
+
+FCD主要做三件事：
+1、实例级对齐：使用对比学习让同一件商品的图文共有表示相互匹配。
+2、分布级对齐：解决对比学习中存在的假负样本问题。
+3、分离共有表示与私有表示：使用欧氏距离衡量不相似性。
+
+对于预提取的模态特征$x_m$，使用MLP将其分为共有特征与私有特征。
+
+$$
+z_m^c=f_{\theta_m^c}(x_m),
+\qquad
+z_m^s=f_{\theta_m^s}(x_m)\qquad \text(1)
+
+$$
+
+MLP有四个：$f_{\theta_v^c}$、$f_{\theta_v^s}$、$f_{\theta_t^c}$、$f_{\theta_t^s}$，对应得到：$z_v^c$、$z_v^s$、$z_t^c$、$z_t^s$。
+
+更新MLP参数的联合约束
+
+$$
+\mathcal L_{\mathrm{FCD}}=\alpha_c\mathcal L_{cl}+\alpha_w\mathcal L_{wd}+\mathcal L_{sep}\qquad \text(8)
+$$
+
+<details>
+
+<summary>损失函数</summary>
+
+实例级对齐损失
+
+$$
+\mathcal L_{cl}=\sum_{m_1,m_2\in\mathcal M}^{m_1\ne m_2}\sum_{i\in\mathcal I}\frac{\exp\left(z_{m_1,i}^c (z_{m_2,i}^c)^\top / \tau\right)}{\displaystyle\sum_{j\in\mathcal I}\sum_{m\in\mathcal M}\exp\left(z_{m_1,i}^c (z_{m,j}^c)^\top / \tau\right)}.\qquad \text(2)
+$$
+
+仅使用实例级对齐容易出现假负样本问题，例如两件商品款式和颜色都很相近，只有品牌不一样，虽然不是同一件商品但也共享了很多有用的语义。会产生把相似语义也分开的问题。
+
+
+分布级对齐损失
+
+$$
+\mathcal L_{wd}=\sum_{m_1,m_2\in\mathcal M}^{m_1\ne m_2}
+\mathcal W_p\left(\mathcal P(z_{m_1}^c),\mathcal P(z_{m_2}^c)\right).\qquad \text(5)
+$$
+
+Wasserstein距离：把概率分布 $P_1$ 的概率质量搬运成 $P_2$ 的分布，最少需要付出多少代价。
+
+$$
+
+W_p(\mathcal P_1,\mathcal P_2)=\left[
+\inf_{\mu\in\Gamma(x_1,x_2)}
+\int
+d(x_1,x_2)^p\,d\mu(x_1,x_2)
+\right]^{\frac{1}{p}}.
+\qquad \text(3)
+
+$$
+
+由于计算成本过高，原文采用Radon变换的线性积分方法计算Wasserstein距离衡量图文分布的差异
+
+
+$$
+\mathcal W_p(\mathcal P_1,\mathcal P_2)=\left[\int_{\mathbb S^{d_\theta-1}}W_p\left(\mathcal R\mathcal P_1(\cdot,\theta),\mathcal R\mathcal P_2(\cdot,\theta)
+\right)\,d\theta\right]^{\frac{1}{p}}.\qquad \text(4)
+$$
+
+
+共有表示融合
+
+Wasserstein重心，找到一种分布使它到图片分布及文本分布的距离尽可能小。
+
+$$
+z^c=\min_z\sum_{m\in\mathcal M}\mathcal W_p\left(\mathcal P(z_m^c),\mathcal P(z)\right).\qquad \text(6)
+$$
+
+
+### 模态内分离
+
+使用L2距离衡量不相似性。
+
+$$
+\mathcal L_{sep}=-\min\left(\sum_{m\in\mathcal M}\sum_{i\in\mathcal I}\left\|z_{m,i}^c-z_{m,i}^s\right\|_2^2,
+d_m\right).\qquad \text(7)
+$$
+
+</details>
+
+
+
+
+## KDBoost（knowledge distillation-enhanced gradient boosting）模块
+
+建立三个推荐模型，模型骨干网络在三次试验中分别采用MGCN、DiffMM，PGL。
+
+给每一路建立一个推荐模型，合起来称为累计模型：
+
+$$
+\mathcal G_\Theta=\left\{g_{\vartheta^c},g_{\vartheta_v^s},g_{\vartheta_t^s}\right\}
+$$
+
+三个分支的分数相加
+
+$$
+S(u,i)
+=
+\mathcal G_\Theta(x,u,i)
+=
+\sum_{g_\vartheta\in\mathcal G_\Theta}
+g_\vartheta(x,u,i)
+\qquad \text(9)
+$$
+
+BPR损失
+
+$$
+\mathcal L_{\mathrm{BPR}}
+=
+-\sum_{(u,i,j)\in\mathcal O}
+\log\left(\sigma\left(\Delta S(u,i,j)\right)\right), \\
+
+\Delta S(u,i,j)=S(u,i)-S(u,j).\qquad \text(10)
+
+$$
+
+
+让选中分支拟合 BPR 的负梯度。
+
+$$
+\begin{aligned}\mathcal L'_{\mathrm{boost}}&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(-\frac{\partial\mathcal L_{\mathrm{BPR}}\left(\operatorname{sg}(\Delta S_{k-1})\right)}{\partial\Delta S_{k-1}}\right)\right)^2\\&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(1-\sigma\left(\operatorname{sg}(\Delta S_{k-1})\right)\right)\right)^2.\end{aligned}\qquad \text(11)
+$$
+
+$S_1$ 使用普通BPR，后续应用式11。
+
+$$
+\mathcal L_{\mathrm{boost}}=\begin{cases}-\displaystyle\sum_{(u,i,j)\in\mathcal O}\log\left(\sigma(\Delta S_k^*)\right),& k=1,\\[6pt]\mathcal L'_{\mathrm{boost}},& k>1.\end{cases}\qquad \text(12)
+$$
+
+用“旧整体模型＋本轮补充模型”作为老师，训练一个仍然由三个分支组成的学生系统。学生由旧整体模型的参数初始化，然后接受蒸馏训练。
+
+学生拟合两位老师的分数差之和。
+
+$$
+\mathcal L_{\mathrm{distill}}=\sum_{(u,i,j)\in\mathcal O}
+\left(\Delta S_k-\operatorname{sg}\left(\Delta S_{k-1}+\Delta S_k^*\right)\right)^2.\qquad \text(13)
+$$
+
+老师的预测也可能不够好，加入全局校正。
+
+$$
+\mathcal L_{\mathrm{gc}}=-\sum_{(u,i,j)\in\mathcal O}
+\log\left(\sigma(\Delta S_k)\right).\qquad \text(14)
+$$
+
+蒸馏阶段的总目标
+
+$$
+\mathcal L_d=\mathcal L_{\mathrm{gc}}+\mathcal L_{\mathrm{distill}}.\qquad \text(15)
+$$
+
