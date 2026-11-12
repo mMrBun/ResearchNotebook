@@ -116,13 +116,13 @@ $$
 让选中分支拟合 BPR 的负梯度。
 
 $$
-\begin{aligned}\mathcal L'_{\mathrm{boost}}&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(-\frac{\partial\mathcal L_{\mathrm{BPR}}\left(\mathrm{sg}(\Delta S_{k-1})\right)}{\partial\Delta S_{k-1}}\right)\right)^2\\&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(1-\sigma\left(\mathrm{sg}(\Delta S_{k-1})\right)\right)\right)^2.\end{aligned}\qquad \text(11)
+\begin{aligned}\mathcal L_{\mathrm{boost}}'&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(-\frac{\partial\mathcal L_{\mathrm{BPR}}\left(\mathrm{sg}(\Delta S_{k-1})\right)}{\partial\Delta S_{k-1}}\right)\right)^2\\&=\sum_{(u,i,j)\in\mathcal O}\left(\Delta S_k^*-\left(1-\sigma\left(\mathrm{sg}(\Delta S_{k-1})\right)\right)\right)^2.\end{aligned}\qquad \text(11)
 $$
 
 $S_1$ 使用普通BPR，后续应用式11。
 
 $$
-\mathcal L_{\mathrm{boost}}=\begin{cases}-\displaystyle\sum_{(u,i,j)\in\mathcal O}\log\left(\sigma(\Delta S_k^*)\right),& k=1,\\[6pt]\mathcal L'_{\mathrm{boost}},& k>1.\end{cases}\qquad \text(12)
+\mathcal L_{\mathrm{boost}}=\begin{cases}-\displaystyle\sum_{(u,i,j)\in\mathcal O}\log\left(\sigma(\Delta S_k^*)\right),& k=1, \\ [6pt]\mathcal L_{\mathrm{boost}}',& k>1.\end{cases}\qquad \text(12)
 $$
 
 用“旧整体模型＋本轮补充模型”作为老师，训练一个仍然由三个分支组成的学生系统。学生由旧整体模型的参数初始化，然后接受蒸馏训练。
