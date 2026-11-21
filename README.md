@@ -17,6 +17,10 @@
  6. Zhan, Xiaohan, Yuliang Shi, Jihu Wang, Shijun Liu, Fanyu Kong和Zhiyong Chen. DHMRec: Collaboration-Guided Multimodal Disentanglement and Hierarchical Fusion for Recommendation. 2026-03-14 *Proceedings of the AAAI Conference on Artificial Intelligence*
  [ https://doi.org/10.1609/aaai.v40i19.38661]( https://doi.org/10.1609/aaai.v40i19.38661)
 
+7. Wang, Bingnan, Yi Li, Xiongxin Tang, Fanjiang Xu和Jiangmeng Li. 《D3ER: Supporting Multi-Modal Recommendation via Disentangle and Distillation-Based Dynamic Ensemble》. Accepted by ACMMM 2026, 2026年8月26日.  [ https://doi.org/10.48550/arXiv.2608.25737]( https://doi.org/10.48550/arXiv.2608.25737)
+
+8. Zhang, Xinyi, Yutong Li, Peijie Sun, Letian Sha和Zhongxuan Han. 《PRISM: Personalized Recommendation via Information Synergy Module》. Accepted as a Full Paper at WWW 2026. [https://doi.org/10.48550/arXiv.2601.10944](https://doi.org/10.48550/arXiv.2601.10944).
+
 
 
 
