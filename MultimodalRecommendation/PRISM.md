@@ -60,12 +60,12 @@ $$
 使用三元组损失让正样本预测尽可能靠近完整的图文预测
 
 $$
-\mathcal L_{\text{uni-i}}=\operatorname{TripletLoss}(\mathbf y,\mathbf y^{img},\mathbf y^{txt}).
+\mathcal L_{\text{uni-i}}=\mathcal{TripletLoss}(\mathbf y,\mathbf y^{img},\mathbf y^{txt}).
 \qquad (5)
 $$
 
 $$
-\mathcal L_{\text{uni-t}}=\operatorname{TripletLoss}(\mathbf y,\mathbf y^{txt},\mathbf y^{img}).
+\mathcal L_{\text{uni-t}}=\mathcal{TripletLoss}(\mathbf y,\mathbf y^{txt},\mathbf y^{img}).
 \qquad (6)
 $$
 
@@ -75,8 +75,8 @@ $$
 
 $$
 \mathcal L_{\text{syn}}=\frac{1}{2}
-\left[\operatorname{CosSim}(\mathbf y,\mathbf y^{img})
-+\operatorname{CosSim}(\mathbf y,\mathbf y^{txt})\right],
+\left[\mathcal{CosSim}(\mathbf y,\mathbf y^{img})
++\mathcal{CosSim}(\mathbf y,\mathbf y^{txt})\right],
 \qquad (7)
 $$
 
@@ -85,8 +85,8 @@ $$
 
 $$
 \mathcal L_{\text{rdn}}=1-\frac{1}{2}
-\left[\operatorname{CosSim}(\mathbf y,\mathbf y^{img})
-+\operatorname{CosSim}(\mathbf y,\mathbf y^{txt})\right].
+\left[\mathcal{CosSim}(\mathbf y,\mathbf y^{img})
++\mathcal{CosSim}(\mathbf y,\mathbf y^{txt})\right].
 \qquad (8)
 $$
 
