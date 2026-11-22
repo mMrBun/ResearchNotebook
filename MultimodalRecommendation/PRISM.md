@@ -124,7 +124,7 @@ $$
 
 ### 预测与优化
 
-PRISM的设计是可插拔的，$L_{rec}$ 可以是任何骨干模型的损失函数，再加上公式9的exp损失用于模型训练。
+PRISM的设计是可插拔的，$`L_{rec}`$ 可以是任何骨干模型的损失函数，再加上公式9的exp损失用于模型训练。
 
 $$
 \mathcal L=\mathcal L_{\mathrm{rec}}+\mathcal L_{\mathrm{exp}}.
