@@ -1,7 +1,7 @@
 # IDMVAE: Disentanglement of Variations with Multimodal Generative Modeling
 
 - 发表在：International Conference on Learning Representations 2026 (ICLR 2026)
-- 作者：Yijie Zhang、Yiyang Shen、Weiran Wang
+- 作者：Yijie Zhang、Yiyang Shen、Weiran Wang **Department of Computer Science University of Iowa Iowa City, IA 52242, USA**
 - [论文原文](https://proceedings.iclr.cc/paper_files/paper/2026/hash/581e1a06fa20f2c079dc5fb2db236335-Abstract-Conference.html)
 
 ## 问题分析
@@ -12,6 +12,8 @@
 多模态VAE使用简单高斯分布作为潜变量先验，实际潜变量会复杂得多，简单先验无法充分拟合。
 
 ## 方法
+
+
 
 
 
