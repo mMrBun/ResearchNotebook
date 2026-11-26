@@ -54,14 +54,8 @@ $$
 
 $$
 (z_m,\tilde w_n)
+\xrightarrow{}
 \hat{x}_n,\quad m\ne n.
-$$
-
-
-使用MoE（Mixture of Experts，专家混合）聚合各模态共有后验：
-
-$$
-q(z\mid X)=\frac{1}{M}\sum_{m=1}^{M}q(z\mid x_m),\qquad X=\{x_1,\ldots,x_M\}.
 $$
 
 MMVAE+目标：
@@ -82,7 +76,7 @@ $$
 为了将扩散模型引入损失，将 KL 散度展开为：
 
 $$
-D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)=\mathbb E_{q(z\mid x)}[\log q(z\mid x)]+\mathbb E_{q(z\mid x)}[-\log p(z)].\tag{3}
+D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)=\mathbb E_{q(z\mid x)}[\log q(z\mid x)]+\mathbb E_{q(z\mid x)}[-\log p(z)]\qquad \text{(3)}.
 $$
 
 
@@ -91,7 +85,7 @@ $$
 使用对比学习匹配同一样本不同模态的共有表示。
 
 $$
-I(z_m; z_n) ≈\operatorname{Contrast}(z_m,z_n)=\mathbb E
+I(z_m; z_n) ≈\mathcal{Contrast}(z_m,z_n)=\mathbb E
 \log
 \frac{\phi(z_m,z_n)}
 {\phi(z_m,z_n)+\sum_{j=1}^{k}\phi(z_m,\bar z_n^j)}.
@@ -111,7 +105,7 @@ $$
 跨视图互信息损失：
 
 $$
-\mathcal L_{\mathrm{CrossMI}}=-\frac{2}{M(M-1)}\sum_{m<n}\operatorname{Contrast}(z_m,z_n).
+\mathcal L_{\mathrm{CrossMI}}=-\frac{2}{M(M-1)}\sum_{m<n}\mathcal{Contrast}(z_m,z_n).
 $$
 
 
@@ -157,9 +151,9 @@ $$
 共有与私有表示损失
 
 $$
-\mathcal L_{\mathrm{GenAug},z_m}=-\operatorname{Contrast}(z_m^{\prime\prime},z_m),
+\mathcal L_{\mathrm{GenAug},z_m}=-\mathcal{Contrast}(z_m^{\prime\prime},z_m),
 \qquad
-\mathcal L_{\mathrm{GenAug},w_m}=-\operatorname{Contrast}(w_m^{\prime\prime},w'_m).
+\mathcal L_{\mathrm{GenAug},w_m}=-\mathcal{Contrast}(w_m^{\prime\prime},w'_m).
 $$
 
 生成式增强损失
