@@ -75,8 +75,6 @@ $$
 
 为了将扩散模型引入损失，将 KL 散度展开为：
 
-公式（3）：
-
 ```math
 \begin{aligned}
 D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)
@@ -90,13 +88,11 @@ D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)
 
 使用对比学习匹配同一样本不同模态的共有表示。
 
-公式（1）：
-
 $$
 I(z_m; z_n) ≈\mathcal{Contrast}(z_m,z_n)=\mathbb E
 \log
 \frac{\phi(z_m,z_n)}
-{\phi(z_m,z_n)+\sum_{j=1}^{k}\phi(z_m,\bar z_n^j)}.
+{\phi(z_m,z_n)+\sum_{j=1}^{k}\phi(z_m,\bar z_n^j)}\qquad \text{(1)}.
 $$
 
 $$
@@ -112,7 +108,9 @@ $$
 跨视图互信息损失：
 
 $$
-\mathcal L_{\mathrm{CrossMI}}=-\frac{2}{M(M-1)}\sum_{m<n}\mathcal{Contrast}(z_m,z_n).
+\mathcal{L}_{\mathrm{CrossMI}}= -
+\frac{2}{M(M-1)}
+\sum_{m<n}\operatorname{Contrast}(z_m,z_n).
 $$
 
 
@@ -181,14 +179,13 @@ $$
 
 
 
-公式（2）：
 
 ```math
 \begin{aligned}
 \min\mathcal L_{\mathrm{IDMVAE}}
-={}&\mathcal L_{\mathrm{MMVAE+}}+\lambda_1\mathcal L_{\mathrm{CrossMI}}\\
-&+\lambda_2\mathcal L_{\mathrm{GenAug}}.
-\end{aligned}
+={}&\mathcal L_{\mathrm{MMVAE+}}+\lambda_1\mathcal L_{\mathrm{CrossMI}}
++\lambda_2\mathcal L_{\mathrm{GenAug}}.
+\end{aligned}\qquad \text{(2)}
 ```
 
 
