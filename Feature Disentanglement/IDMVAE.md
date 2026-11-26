@@ -110,7 +110,7 @@ $$
 $$
 \mathcal{L}_{\mathrm{CrossMI}}= -
 \frac{2}{M(M-1)}
-\sum_{m<n}\operatorname{Contrast}(z_m,z_n).
+\sum_{m<n}\mathcal{Contrast}(z_m,z_n).
 $$
 
 
