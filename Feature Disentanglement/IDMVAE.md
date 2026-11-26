@@ -80,9 +80,9 @@ $$
 ```math
 \begin{aligned}
 D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)
-={}&\mathbb E_{q(z\mid x)}[\log q(z\mid x)]\\
-&+\mathbb E_{q(z\mid x)}[-\log p(z)].
-\end{aligned}
+={}&\mathbb E_{q(z\mid x)}[\log q(z\mid x)]
++\mathbb E_{q(z\mid x)}[-\log p(z)].
+\end{aligned}\qquad \text{(3)}
 ```
 
 
