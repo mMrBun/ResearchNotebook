@@ -54,7 +54,6 @@ $$
 
 $$
 (z_m,\tilde w_n)
-\xrightarrow{\text{模态 }n\text{ 的解码器}}
 \hat{x}_n,\quad m\ne n.
 $$
 
