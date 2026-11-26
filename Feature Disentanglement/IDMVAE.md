@@ -93,7 +93,7 @@ D_{\mathrm{KL}}\bigl(q(z\mid x)\Vert p(z)\bigr)
 公式（1）：
 
 $$
-I(z_m; z_n) ≈\operatorname{Contrast}(z_m,z_n)=\mathbb E
+I(z_m; z_n) ≈\mathcal{Contrast}(z_m,z_n)=\mathbb E
 \log
 \frac{\phi(z_m,z_n)}
 {\phi(z_m,z_n)+\sum_{j=1}^{k}\phi(z_m,\bar z_n^j)}.
@@ -112,7 +112,7 @@ $$
 跨视图互信息损失：
 
 $$
-\mathcal L_{\mathrm{CrossMI}}=-\frac{2}{M(M-1)}\sum_{m<n}\operatorname{Contrast}(z_m,z_n).
+\mathcal L_{\mathrm{CrossMI}}=-\frac{2}{M(M-1)}\sum_{m<n}\mathcal{Contrast}(z_m,z_n).
 $$
 
 
@@ -158,9 +158,9 @@ $$
 共有与私有表示损失
 
 $$
-\mathcal L_{\mathrm{GenAug},z_m}=-\operatorname{Contrast}(z_m^{\prime\prime},z_m),
+\mathcal L_{\mathrm{GenAug},z_m}=-\mathcal{Contrast}(z_m^{\prime\prime},z_m),
 \qquad
-\mathcal L_{\mathrm{GenAug},w_m}=-\operatorname{Contrast}(w_m^{\prime\prime},w'_m).
+\mathcal L_{\mathrm{GenAug},w_m}=-\mathcal{Contrast}(w_m^{\prime\prime},w'_m).
 $$
 
 生成式增强损失
