@@ -55,7 +55,7 @@ $$
 $$
 (z_m,\tilde w_n)
 \xrightarrow{}
-\hat{x}_n,\quad m\ne n.
+\hat{x}_n,\qquad m\ne n.
 $$
 
 MMVAE+目标：
@@ -152,6 +152,10 @@ z_m^{\prime\prime}\leftrightarrow z_m,
 \qquad
 w_m^{\prime\prime}\leftrightarrow w'_m.
 $$
+
+<div align="center">
+  <img src="../assets/PRISM/figure1.png" width="30%">
+</div>
 
 共有与私有表示损失
 
