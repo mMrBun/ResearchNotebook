@@ -154,7 +154,7 @@ w_m^{\prime\prime}\leftrightarrow w'_m.
 $$
 
 <div align="center">
-  <img src="../assets/PRISM/figure1.png" width="30%">
+  <img src="../assets/IDMVAE/figure1.png" width="30%">
 </div>
 
 共有与私有表示损失
